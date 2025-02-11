@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tallas",
+  "info": {
+    "singularName": "talla",
+    "pluralName": "tallas",
+    "displayName": "Tallas"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sigla": {
+      "type": "string"
+    },
+    "descripcion": {
+      "type": "string"
+    }
+  }
+}

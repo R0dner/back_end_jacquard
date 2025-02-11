@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_productos_items_salidas",
+  "info": {
+    "displayName": "Items_salida",
+    "icon": "ambulance"
+  },
+  "options": {},
+  "attributes": {
+    "producto": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::producto.producto"
+    },
+    "cantidad_anterior": {
+      "type": "biginteger",
+      "default": "0"
+    },
+    "cantidad_posterior": {
+      "type": "biginteger"
+    },
+    "cantidad_solicitada": {
+      "type": "biginteger"
+    }
+  }
+}

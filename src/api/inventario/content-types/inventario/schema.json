@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "inventarios",
+  "info": {
+    "singularName": "inventario",
+    "pluralName": "inventarios",
+    "displayName": "Inventario",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stock_actual": {
+      "type": "biginteger"
+    },
+    "producto": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::producto.producto"
+    },
+    "ultimo_ingreso": {
+      "type": "datetime"
+    },
+    "codigo": {
+      "type": "uid"
+    },
+    "ultima_salida": {
+      "type": "datetime"
+    },
+    "stock_minimo": {
+      "type": "integer",
+      "default": 0
+    },
+    "unidad_de_medida": {
+      "type": "enumeration",
+      "enum": [
+        "docena",
+        "paquete"
+      ],
+      "default": "docena"
+    }
+  }
+}

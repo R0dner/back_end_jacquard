@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_productos_item_simples",
+  "info": {
+    "displayName": "item_simple",
+    "icon": "play"
+  },
+  "options": {},
+  "attributes": {
+    "producto": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::producto.producto"
+    }
+  }
+}

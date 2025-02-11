@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "salidas",
+  "info": {
+    "singularName": "salida",
+    "pluralName": "salidas",
+    "displayName": "Salidas",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "tipo_solicitud": {
+      "type": "enumeration",
+      "enum": [
+        "Entrega",
+        "Venta directa",
+        "Preventa",
+        "Devolución"
+      ],
+      "default": "Entrega"
+    },
+    "Aclaracion": {
+      "type": "text"
+    },
+    "Productos": {
+      "type": "component",
+      "repeatable": true,
+      "component": "productos.items-salida"
+    },
+    "solicitado_por": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "admin::user"
+    },
+    "aprobado_por": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "admin::user"
+    }
+  }
+}

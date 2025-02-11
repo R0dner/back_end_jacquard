@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ingresos",
+  "info": {
+    "singularName": "ingreso",
+    "pluralName": "ingresos",
+    "displayName": "Ingresos",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "tipo_ingreso": {
+      "type": "enumeration",
+      "enum": [
+        "Producción",
+        "Compra",
+        "Donación",
+        "Transferencia",
+        "Otros"
+      ],
+      "default": "Producción"
+    },
+    "fecha_ingreso": {
+      "type": "date"
+    },
+    "motivo_ingreso": {
+      "type": "string"
+    },
+    "numero_factura": {
+      "type": "string"
+    },
+    "Productos": {
+      "type": "component",
+      "repeatable": true,
+      "component": "productos.items"
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": [
+        "Creado",
+        "Aprobado"
+      ]
+    },
+    "ingresado_por": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "admin::user"
+    },
+    "aprobado_por": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "admin::user"
+    },
+    "aprobado": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_productos_items",
+  "info": {
+    "displayName": "items",
+    "icon": "asterisk",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "cantidad": {
+      "type": "integer"
+    },
+    "costo_total": {
+      "type": "biginteger"
+    },
+    "producto": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::producto.producto"
+    },
+    "costo_unitario": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

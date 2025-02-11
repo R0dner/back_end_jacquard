@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "colores",
+  "info": {
+    "singularName": "color",
+    "pluralName": "colores",
+    "displayName": "Colores"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string"
+    },
+    "color_rgb": {
+      "type": "string"
+    },
+    "imagen": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

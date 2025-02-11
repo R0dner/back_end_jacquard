@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "grupos_productos",
+  "info": {
+    "singularName": "grupo-producto",
+    "pluralName": "grupos-productos",
+    "displayName": "Grupos de Productos",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "codigo": {
+      "type": "uid"
+    },
+    "nombre": {
+      "type": "string"
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true
+    },
+    "imagen": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "categoria": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::categorias.categorias",
+      "inversedBy": "grupos_de_productos"
+    }
+  }
+}

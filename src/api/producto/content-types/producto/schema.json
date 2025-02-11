@@ -1,0 +1,93 @@
+{
+  "kind": "collectionType",
+  "collectionName": "productos",
+  "info": {
+    "singularName": "producto",
+    "pluralName": "productos",
+    "displayName": "Productos",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "codigo": {
+      "type": "uid"
+    },
+    "nombre": {
+      "type": "string"
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "observaciones": {
+      "type": "text"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true
+    },
+    "imagen_principal": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "multimedia": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "videos"
+      ]
+    },
+    "valoracion": {
+      "type": "decimal",
+      "default": 1,
+      "min": 0,
+      "max": 5
+    },
+    "precio_venta": {
+      "type": "decimal",
+      "default": 0
+    },
+    "precio_oferta": {
+      "type": "decimal"
+    },
+    "en_oferta": {
+      "type": "boolean",
+      "default": false
+    },
+    "stock_disponible": {
+      "type": "integer",
+      "default": 0
+    },
+    "productos_relacionados": {
+      "type": "component",
+      "repeatable": true,
+      "component": "productos.item-simple"
+    },
+    "color": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::color.color"
+    },
+    "talla": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::talla.talla"
+    },
+    "fecha_disponible": {
+      "type": "date"
+    },
+    "grupo_de_productos": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grupo-producto.grupo-producto"
+    }
+  }
+}

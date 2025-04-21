@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "novedades",
+  "info": {
+    "singularName": "novedad",
+    "pluralName": "novedades",
+    "displayName": "novedades"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string"
+    },
+    "FechadePublicacion": {
+      "type": "date"
+    },
+    "imagen": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    },
+    "DescripcionBreve": {
+      "type": "string"
+    },
+    "Enlace": {
+      "type": "string"
+    }
+  }
+}

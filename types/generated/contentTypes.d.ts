@@ -362,6 +362,53 @@ export interface AdminUser extends Schema.CollectionType {
   };
 }
 
+export interface ApiCarruselEmpresaCarruselEmpresa
+  extends Schema.CollectionType {
+  collectionName: 'carrusel_empresas';
+  info: {
+    description: 'Im\u00E1genes para el carrusel de la p\u00E1gina Empresa';
+    displayName: 'Carrusel Empresa';
+    pluralName: 'carrusel-empresas';
+    singularName: 'carrusel-empresa';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::carrusel-empresa.carrusel-empresa',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    descripcion: Attribute.Text;
+    empresa: Attribute.Relation<
+      'api::carrusel-empresa.carrusel-empresa',
+      'manyToOne',
+      'api::empresa.empresa'
+    >;
+    imagen: Attribute.Media<'images'> & Attribute.Required;
+    orden: Attribute.Integer &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Attribute.DefaultTo<0>;
+    publishedAt: Attribute.DateTime;
+    titulo: Attribute.String;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::carrusel-empresa.carrusel-empresa',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiCategoriasCategorias extends Schema.CollectionType {
   collectionName: 'categoria';
   info: {
@@ -404,6 +451,7 @@ export interface ApiCategoriasCategorias extends Schema.CollectionType {
 export interface ApiColorColor extends Schema.CollectionType {
   collectionName: 'colores';
   info: {
+    description: 'Colores disponibles para los productos';
     displayName: 'Colores';
     pluralName: 'colores';
     singularName: 'color';
@@ -412,7 +460,7 @@ export interface ApiColorColor extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
-    color_rgb: Attribute.String;
+    color_rgb: Attribute.String & Attribute.Required;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::color.color',
@@ -421,10 +469,87 @@ export interface ApiColorColor extends Schema.CollectionType {
     > &
       Attribute.Private;
     imagen: Attribute.Media<'images'>;
-    nombre: Attribute.String;
+    nombre: Attribute.String & Attribute.Required & Attribute.Unique;
+    productos: Attribute.Relation<
+      'api::color.color',
+      'oneToMany',
+      'api::producto.producto'
+    >;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
       'api::color.color',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiEmpresaEmpresa extends Schema.CollectionType {
+  collectionName: 'empresas';
+  info: {
+    displayName: 'Empresa';
+    pluralName: 'empresas';
+    singularName: 'empresa';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    carruselItems: Attribute.Relation<
+      'api::empresa.empresa',
+      'oneToMany',
+      'api::carrusel-empresa.carrusel-empresa'
+    >;
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::empresa.empresa',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    descripcion_historia: Attribute.Text;
+    filosofia: Attribute.Text;
+    publishedAt: Attribute.DateTime;
+    titulo_historia: Attribute.String;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::empresa.empresa',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiGaleriaEmpresaGaleriaEmpresa extends Schema.CollectionType {
+  collectionName: 'galeria_empresas';
+  info: {
+    description: '';
+    displayName: 'galeria-empresa';
+    pluralName: 'galeria-empresas';
+    singularName: 'galeria-empresa';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::galeria-empresa.galeria-empresa',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    Descripcion: Attribute.String;
+    Enlace: Attribute.Text;
+    imagen: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    orden: Attribute.Integer;
+    publishedAt: Attribute.DateTime;
+    titulo: Attribute.String;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::galeria-empresa.galeria-empresa',
       'oneToOne',
       'admin::user'
     > &
@@ -561,10 +686,148 @@ export interface ApiInventarioInventario extends Schema.CollectionType {
   };
 }
 
+export interface ApiMensajeMensaje extends Schema.CollectionType {
+  collectionName: 'mensajes';
+  info: {
+    description: '';
+    displayName: 'Mensaje';
+    pluralName: 'mensajes';
+    singularName: 'mensaje';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::mensaje.mensaje',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    description: Attribute.Text;
+    fullName: Attribute.String & Attribute.Required;
+    messageType: Attribute.Text & Attribute.Required;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::mensaje.mensaje',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiNovedadNovedad extends Schema.CollectionType {
+  collectionName: 'novedades';
+  info: {
+    displayName: 'novedades';
+    pluralName: 'novedades';
+    singularName: 'novedad';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::novedad.novedad',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    DescripcionBreve: Attribute.String;
+    Enlace: Attribute.String;
+    FechadePublicacion: Attribute.Date;
+    imagen: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    publishedAt: Attribute.DateTime;
+    titulo: Attribute.String;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::novedad.novedad',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPedidoPedido extends Schema.CollectionType {
+  collectionName: 'pedidos';
+  info: {
+    displayName: 'Pedidos';
+    pluralName: 'pedidos';
+    singularName: 'pedido';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    comprobante: Attribute.Media<'images' | 'files'> & Attribute.Required;
+    costo_envio: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Attribute.DefaultTo<0>;
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::pedido.pedido',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    estado: Attribute.Enumeration<
+      ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado']
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'pendiente'>;
+    fecha_entrega_solicitada: Attribute.DateTime & Attribute.Required;
+    fecha_pedido: Attribute.DateTime & Attribute.Required;
+    metodo_pago: Attribute.String & Attribute.Required;
+    productos: Attribute.JSON & Attribute.Required;
+    publishedAt: Attribute.DateTime;
+    referencia: Attribute.String & Attribute.Required & Attribute.Unique;
+    subtotal: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    total: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::pedido.pedido',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    user: Attribute.Relation<
+      'api::pedido.pedido',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    user_email: Attribute.Email & Attribute.Required;
+    user_role: Attribute.String & Attribute.Required;
+  };
+}
+
 export interface ApiProductoProducto extends Schema.CollectionType {
   collectionName: 'productos';
   info: {
-    description: '';
+    description: 'Cat\u00E1logo de productos';
     displayName: 'Productos';
     pluralName: 'productos';
     singularName: 'producto';
@@ -574,10 +837,10 @@ export interface ApiProductoProducto extends Schema.CollectionType {
   };
   attributes: {
     activo: Attribute.Boolean & Attribute.DefaultTo<true>;
-    codigo: Attribute.UID;
-    color: Attribute.Relation<
+    codigo: Attribute.UID & Attribute.Required;
+    colores: Attribute.Relation<
       'api::producto.producto',
-      'oneToOne',
+      'oneToMany',
       'api::color.color'
     >;
     createdAt: Attribute.DateTime;
@@ -587,7 +850,7 @@ export interface ApiProductoProducto extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    descripcion: Attribute.Text;
+    descripcion: Attribute.Text & Attribute.Required;
     en_oferta: Attribute.Boolean & Attribute.DefaultTo<false>;
     fecha_disponible: Attribute.Date;
     grupo_de_productos: Attribute.Relation<
@@ -597,10 +860,16 @@ export interface ApiProductoProducto extends Schema.CollectionType {
     >;
     imagen_principal: Attribute.Media<'images'>;
     multimedia: Attribute.Media<'images' | 'videos', true>;
-    nombre: Attribute.String;
+    nombre: Attribute.String &
+      Attribute.Required &
+      Attribute.SetMinMaxLength<{
+        minLength: 3;
+      }>;
     observaciones: Attribute.Text;
     precio_oferta: Attribute.Decimal;
-    precio_venta: Attribute.Decimal & Attribute.DefaultTo<0>;
+    precio_venta: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.DefaultTo<0>;
     productos_relacionados: Attribute.Component<'productos.item-simple', true>;
     stock_disponible: Attribute.Integer & Attribute.DefaultTo<0>;
     talla: Attribute.Relation<
@@ -624,6 +893,42 @@ export interface ApiProductoProducto extends Schema.CollectionType {
         number
       > &
       Attribute.DefaultTo<1>;
+  };
+}
+
+export interface ApiPublicacionesRecientePublicacionesReciente
+  extends Schema.CollectionType {
+  collectionName: 'publicaciones_recientes';
+  info: {
+    description: '';
+    displayName: 'publicaciones-recientes';
+    pluralName: 'publicaciones-recientes';
+    singularName: 'publicaciones-reciente';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::publicaciones-reciente.publicaciones-reciente',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    enlace: Attribute.String;
+    fecha: Attribute.Date;
+    imagen: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    publishedAt: Attribute.DateTime;
+    resumen: Attribute.String;
+    titulo: Attribute.String;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::publicaciones-reciente.publicaciones-reciente',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
   };
 }
 
@@ -1074,9 +1379,7 @@ export interface PluginUsersPermissionsRole extends Schema.CollectionType {
 export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   collectionName: 'up_users';
   info: {
-    description: '';
     displayName: 'User';
-    name: 'user';
     pluralName: 'users';
     singularName: 'user';
   };
@@ -1105,6 +1408,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    pedidos: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::pedido.pedido'
+    >;
     provider: Attribute.String;
     resetPasswordToken: Attribute.String & Attribute.Private;
     role: Attribute.Relation<
@@ -1142,12 +1450,19 @@ declare module '@strapi/types' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::carrusel-empresa.carrusel-empresa': ApiCarruselEmpresaCarruselEmpresa;
       'api::categorias.categorias': ApiCategoriasCategorias;
       'api::color.color': ApiColorColor;
+      'api::empresa.empresa': ApiEmpresaEmpresa;
+      'api::galeria-empresa.galeria-empresa': ApiGaleriaEmpresaGaleriaEmpresa;
       'api::grupo-producto.grupo-producto': ApiGrupoProductoGrupoProducto;
       'api::ingreso.ingreso': ApiIngresoIngreso;
       'api::inventario.inventario': ApiInventarioInventario;
+      'api::mensaje.mensaje': ApiMensajeMensaje;
+      'api::novedad.novedad': ApiNovedadNovedad;
+      'api::pedido.pedido': ApiPedidoPedido;
       'api::producto.producto': ApiProductoProducto;
+      'api::publicaciones-reciente.publicaciones-reciente': ApiPublicacionesRecientePublicacionesReciente;
       'api::salida.salida': ApiSalidaSalida;
       'api::talla.talla': ApiTallaTalla;
       'plugin::content-releases.release': PluginContentReleasesRelease;

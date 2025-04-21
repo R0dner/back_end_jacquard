@@ -1,0 +1,100 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pedidos",
+  "info": {
+    "singularName": "pedido",
+    "pluralName": "pedidos",
+    "displayName": "Pedidos"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user_email": {
+      "type": "email",
+      "required": true,
+      "description": "Email del usuario al momento del pedido",
+      "configurable": false,
+      "private": false
+    },
+    "user_role": {
+      "type": "string",
+      "required": true,
+      "description": "Rol del usuario al momento del pedido",
+      "configurable": false,
+      "private": false
+    },
+    "referencia": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "fecha_pedido": {
+      "type": "datetime",
+      "required": true
+    },
+    "fecha_entrega_solicitada": {
+      "type": "datetime",
+      "required": true,
+      "description": "Fecha y hora en que el cliente desea recibir el pedido"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "pedidos"
+    },
+    "productos": {
+      "type": "json",
+      "required": true,
+      "description": "Array de productos en formato JSON"
+    },
+    "metodo_pago": {
+      "type": "string",
+      "required": true,
+      "enum": [
+        "transferencia_bancaria",
+        "pago_qr",
+        "efectivo"
+      ]
+    },
+    "comprobante": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "subtotal": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "costo_envio": {
+      "type": "decimal",
+      "required": true,
+      "min": 0,
+      "default": 0
+    },
+    "total": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": [
+        "pendiente",
+        "procesando",
+        "enviado",
+        "entregado",
+        "cancelado"
+      ],
+      "default": "pendiente",
+      "required": true
+    }
+  }
+}

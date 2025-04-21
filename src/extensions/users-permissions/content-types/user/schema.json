@@ -2,8 +2,6 @@
   "kind": "collectionType",
   "collectionName": "up_users",
   "info": {
-    "name": "user",
-    "description": "",
     "singularName": "user",
     "pluralName": "users",
     "displayName": "User"
@@ -71,6 +69,12 @@
         "vendedor"
       ],
       "default": "Preventista"
+    },
+    "pedidos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pedido.pedido",
+      "mappedBy": "user"
     }
   }
 }

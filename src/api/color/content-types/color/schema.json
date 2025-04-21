@@ -4,7 +4,8 @@
   "info": {
     "singularName": "color",
     "pluralName": "colores",
-    "displayName": "Colores"
+    "displayName": "Colores",
+    "description": "Colores disponibles para los productos"
   },
   "options": {
     "draftAndPublish": false
@@ -12,17 +13,27 @@
   "pluginOptions": {},
   "attributes": {
     "nombre": {
-      "type": "string"
+      "type": "string",
+      "required": true,
+      "unique": true
     },
     "color_rgb": {
-      "type": "string"
+      "type": "string",
+      "required": true,
+      "regex": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
     },
     "imagen": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "productos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::producto.producto"
     }
   }
 }

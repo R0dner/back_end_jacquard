@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "empresas",
+  "info": {
+    "singularName": "empresa",
+    "pluralName": "empresas",
+    "displayName": "Empresa"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo_historia": {
+      "type": "string"
+    },
+    "descripcion_historia": {
+      "type": "text"
+    },
+    "filosofia": {
+      "type": "text"
+    },
+    "carruselItems": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::carrusel-empresa.carrusel-empresa",
+      "mappedBy": "empresa"
+    }
+  }
+}

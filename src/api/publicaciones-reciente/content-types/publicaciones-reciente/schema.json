@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "publicaciones_recientes",
+  "info": {
+    "singularName": "publicaciones-reciente",
+    "pluralName": "publicaciones-recientes",
+    "displayName": "publicaciones-recientes",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string"
+    },
+    "fecha": {
+      "type": "date"
+    },
+    "resumen": {
+      "type": "string"
+    },
+    "imagen": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "enlace": {
+      "type": "string"
+    }
+  }
+}

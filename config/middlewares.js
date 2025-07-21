@@ -6,7 +6,7 @@ module.exports = [
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          'connect-src': ["'self'", 'http:', 'https:', 'http://localhost:3000', 'http://localhost:1337'],
+          'connect-src': ["'self'", 'http:', 'https:', 'http://localhost:3000'],
           'img-src': ["'self'", 'data:', 'blob:', 'http:', 'https:'],
           'media-src': ["'self'", 'data:', 'blob:', 'http:', 'https:'],
           upgradeInsecureRequests: null,
@@ -19,7 +19,7 @@ module.exports = [
     config: {
       enabled: true,
       headers: '*',
-      origin: ['http://localhost:3000', 'http://localhost:1337']
+      origin: ['http://localhost:3000']
     }
   },
   'strapi::poweredBy',

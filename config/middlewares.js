@@ -6,7 +6,7 @@ module.exports = [
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          'connect-src': ["'self'", 'http:', 'https:', 'http://localhost:3000'],
+          'connect-src': ["'self'", 'http:', 'https:', 'https://front-end-jacquard.vercel.app'],
           'img-src': ["'self'", 'data:', 'blob:', 'http:', 'https:'],
           'media-src': ["'self'", 'data:', 'blob:', 'http:', 'https:'],
           upgradeInsecureRequests: null,
@@ -19,7 +19,7 @@ module.exports = [
     config: {
       enabled: true,
       headers: '*',
-      origin: ['http://localhost:3000']
+      origin: ['https://front-end-jacquard.vercel.app']
     }
   },
   'strapi::poweredBy',

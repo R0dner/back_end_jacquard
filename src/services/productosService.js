@@ -1,7 +1,7 @@
 // src/services/productosService.js
 import axios from 'axios';
 
-const apiUrl = process.env.VUE_APP_STRAPI_URL || 'http://localhost:1337';
+const apiUrl = process.env.VUE_APP_STRAPI_URL || 'https://delicate-attraction-2c7f961647.strapiapp.com';
 
 export default {
   // Obtener todos los productos con posibles filtros

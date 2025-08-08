@@ -10,7 +10,7 @@
     "strapi": "strapi"
   },
   "dependencies": {
-    "@strapi/plugin-graphql": "^4.15.0",
+    "@strapi/plugin-graphql": "^4.25.23",
     "@strapi/plugin-i18n": "^4.15.0",
     "@strapi/plugin-users-permissions": "^4.15.0",
     "@strapi/provider-email-sendgrid": "^4.15.0",

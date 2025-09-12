@@ -38,6 +38,12 @@
       "relation": "oneToMany",
       "target": "api::grupo-producto.grupo-producto",
       "mappedBy": "categoria"
+    },
+    "productos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::producto.producto",
+      "inversedBy": "categorias"
     }
   }
 }

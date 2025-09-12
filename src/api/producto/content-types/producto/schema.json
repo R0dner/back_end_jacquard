@@ -93,6 +93,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::color.color"
+    },
+    "categorias": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::categorias.categorias",
+      "mappedBy": "productos"
     }
   }
 }

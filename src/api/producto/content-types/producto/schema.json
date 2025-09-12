@@ -71,11 +71,6 @@
       "type": "integer",
       "default": 0
     },
-    "productos_relacionados": {
-      "type": "component",
-      "repeatable": true,
-      "component": "productos.item-simple"
-    },
     "talla": {
       "type": "relation",
       "relation": "oneToOne",
@@ -84,10 +79,11 @@
     "fecha_disponible": {
       "type": "date"
     },
-    "grupo_de_productos": {
+    "grupos_de_productos": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::grupo-producto.grupo-producto"
+      "relation": "manyToMany",
+      "target": "api::grupo-producto.grupo-producto",
+      "inversedBy": "productos"
     },
     "colores": {
       "type": "relation",

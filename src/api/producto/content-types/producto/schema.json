@@ -84,22 +84,21 @@
     "fecha_disponible": {
       "type": "date"
     },
-    "grupos_de_productos": {
+    "grupo_de_productos": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::grupo-producto.grupo-producto",
-      "mappedBy": "productos"
+      "relation": "oneToOne",
+      "target": "api::grupo-producto.grupo-producto"
     },
     "colores": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::color.color"
     },
-    "categorias": {
+    "categoria": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "manyToOne",
       "target": "api::categorias.categorias",
-      "mappedBy": "productos"
+      "inversedBy": "productos"
     }
   }
 }

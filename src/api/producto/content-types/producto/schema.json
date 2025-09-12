@@ -93,12 +93,6 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::color.color"
-    },
-    "categoria": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::categorias.categorias",
-      "inversedBy": "productos"
     }
   }
 }

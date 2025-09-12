@@ -38,12 +38,6 @@
       "relation": "oneToMany",
       "target": "api::grupo-producto.grupo-producto",
       "mappedBy": "categoria"
-    },
-    "productos": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::producto.producto",
-      "mappedBy": "categoria"
     }
   }
 }

@@ -84,10 +84,11 @@
     "fecha_disponible": {
       "type": "date"
     },
-    "grupo_de_productos": {
+    "grupos_de_productos": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::grupo-producto.grupo-producto"
+      "relation": "manyToMany",
+      "target": "api::grupo-producto.grupo-producto",
+      "mappedBy": "productos"
     },
     "colores": {
       "type": "relation",

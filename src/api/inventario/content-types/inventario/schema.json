@@ -5,7 +5,7 @@
     "singularName": "inventario",
     "pluralName": "inventarios",
     "displayName": "Inventario",
-    "description": "Control de inventario por producto y color"
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -15,10 +15,10 @@
     "stock_actual": {
       "type": "biginteger"
     },
-    "producto_color": {
+    "producto": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::producto-color.producto-color"
+      "target": "api::producto.producto"
     },
     "ultimo_ingreso": {
       "type": "datetime"
@@ -40,16 +40,6 @@
         "paquete"
       ],
       "default": "docena"
-    },
-    "reservado": {
-      "type": "integer",
-      "default": 0,
-      "description": "Cantidad reservada para pedidos"
-    },
-    "disponible": {
-      "type": "integer",
-      "default": 0,
-      "description": "Stock actual menos reservado"
     }
   }
 }

@@ -3,12 +3,14 @@
   "info": {
     "displayName": "items",
     "icon": "asterisk",
-    "description": ""
+    "description": "Items de productos con colores para ingresos"
   },
   "options": {},
   "attributes": {
     "cantidad": {
-      "type": "integer"
+      "type": "integer",
+      "required": true,
+      "min": 1
     },
     "costo_total": {
       "type": "biginteger"
@@ -16,11 +18,21 @@
     "producto": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::producto.producto"
+      "target": "api::producto.producto",
+      "required": true
+    },
+    "color": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::color.color",
+      "required": true
     },
     "costo_unitario": {
       "type": "integer",
       "default": 0
+    },
+    "observaciones": {
+      "type": "text"
     }
   }
 }

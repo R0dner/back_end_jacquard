@@ -67,10 +67,6 @@
       "type": "boolean",
       "default": false
     },
-    "stock_disponible": {
-      "type": "integer",
-      "default": 0
-    },
     "talla": {
       "type": "relation",
       "relation": "oneToOne",
@@ -87,8 +83,15 @@
     },
     "colores": {
       "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::color.color",
+      "mappedBy": "productos"
+    },
+    "inventarios": {
+      "type": "relation",
       "relation": "oneToMany",
-      "target": "api::color.color"
+      "target": "api::inventario.inventario",
+      "mappedBy": "producto"
     }
   }
 }

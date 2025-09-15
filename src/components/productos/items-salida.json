@@ -2,14 +2,22 @@
   "collectionName": "components_productos_items_salidas",
   "info": {
     "displayName": "Items_salida",
-    "icon": "ambulance"
+    "icon": "ambulance",
+    "description": "Items de productos con colores para salidas"
   },
   "options": {},
   "attributes": {
     "producto": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::producto.producto"
+      "target": "api::producto.producto",
+      "required": true
+    },
+    "color": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::color.color",
+      "required": true
     },
     "cantidad_anterior": {
       "type": "biginteger",
@@ -19,7 +27,12 @@
       "type": "biginteger"
     },
     "cantidad_solicitada": {
-      "type": "biginteger"
+      "type": "biginteger",
+      "required": true,
+      "min": 1
+    },
+    "observaciones": {
+      "type": "text"
     }
   }
 }

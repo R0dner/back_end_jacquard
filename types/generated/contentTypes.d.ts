@@ -469,10 +469,15 @@ export interface ApiColorColor extends Schema.CollectionType {
     > &
       Attribute.Private;
     imagen: Attribute.Media<'images'>;
+    inventarios: Attribute.Relation<
+      'api::color.color',
+      'oneToMany',
+      'api::inventario.inventario'
+    >;
     nombre: Attribute.String & Attribute.Required & Attribute.Unique;
     productos: Attribute.Relation<
       'api::color.color',
-      'oneToMany',
+      'manyToMany',
       'api::producto.producto'
     >;
     updatedAt: Attribute.DateTime;
@@ -586,6 +591,11 @@ export interface ApiGrupoProductoGrupoProducto extends Schema.CollectionType {
     descripcion: Attribute.Text;
     imagen: Attribute.Media<'images'>;
     nombre: Attribute.String;
+    productos: Attribute.Relation<
+      'api::grupo-producto.grupo-producto',
+      'manyToMany',
+      'api::producto.producto'
+    >;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
       'api::grupo-producto.grupo-producto',
@@ -648,7 +658,7 @@ export interface ApiIngresoIngreso extends Schema.CollectionType {
 export interface ApiInventarioInventario extends Schema.CollectionType {
   collectionName: 'inventarios';
   info: {
-    description: '';
+    description: 'Inventario por producto y color';
     displayName: 'Inventario';
     pluralName: 'inventarios';
     singularName: 'inventario';
@@ -658,6 +668,12 @@ export interface ApiInventarioInventario extends Schema.CollectionType {
   };
   attributes: {
     codigo: Attribute.UID;
+    color: Attribute.Relation<
+      'api::inventario.inventario',
+      'manyToOne',
+      'api::color.color'
+    > &
+      Attribute.Required;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::inventario.inventario',
@@ -667,10 +683,10 @@ export interface ApiInventarioInventario extends Schema.CollectionType {
       Attribute.Private;
     producto: Attribute.Relation<
       'api::inventario.inventario',
-      'oneToOne',
+      'manyToOne',
       'api::producto.producto'
     >;
-    stock_actual: Attribute.BigInteger;
+    stock_actual: Attribute.BigInteger & Attribute.DefaultTo<0>;
     stock_minimo: Attribute.Integer & Attribute.DefaultTo<0>;
     ultima_salida: Attribute.DateTime;
     ultimo_ingreso: Attribute.DateTime;
@@ -840,7 +856,7 @@ export interface ApiProductoProducto extends Schema.CollectionType {
     codigo: Attribute.UID & Attribute.Required;
     colores: Attribute.Relation<
       'api::producto.producto',
-      'oneToMany',
+      'manyToMany',
       'api::color.color'
     >;
     createdAt: Attribute.DateTime;
@@ -853,9 +869,9 @@ export interface ApiProductoProducto extends Schema.CollectionType {
     descripcion: Attribute.Text & Attribute.Required;
     en_oferta: Attribute.Boolean & Attribute.DefaultTo<false>;
     fecha_disponible: Attribute.Date;
-    grupo_de_productos: Attribute.Relation<
+    grupos_de_productos: Attribute.Relation<
       'api::producto.producto',
-      'oneToOne',
+      'manyToMany',
       'api::grupo-producto.grupo-producto'
     >;
     imagen_principal: Attribute.Media<'images'>;
@@ -870,7 +886,6 @@ export interface ApiProductoProducto extends Schema.CollectionType {
     precio_venta: Attribute.Decimal &
       Attribute.Required &
       Attribute.DefaultTo<0>;
-    productos_relacionados: Attribute.Component<'productos.item-simple', true>;
     stock_disponible: Attribute.Integer & Attribute.DefaultTo<0>;
     talla: Attribute.Relation<
       'api::producto.producto',

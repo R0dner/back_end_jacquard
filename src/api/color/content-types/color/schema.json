@@ -35,12 +35,6 @@
       "relation": "manyToMany",
       "target": "api::producto.producto",
       "mappedBy": "colores"
-    },
-    "inventarios": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::inventario.inventario",
-      "mappedBy": "color"
     }
   }
 }

@@ -69,7 +69,8 @@
     },
     "stock_disponible": {
       "type": "integer",
-      "default": 0
+      "default": 0,
+      "description": "Stock total calculado automáticamente desde producto_colores"
     },
     "talla": {
       "type": "relation",
@@ -85,10 +86,11 @@
       "target": "api::grupo-producto.grupo-producto",
       "inversedBy": "productos"
     },
-    "colores": {
+    "producto_colores": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::color.color"
+      "target": "api::producto-color.producto-color",
+      "mappedBy": "producto"
     }
   }
 }

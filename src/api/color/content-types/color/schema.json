@@ -30,10 +30,11 @@
         "images"
       ]
     },
-    "productos": {
+    "producto_colores": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::producto.producto"
+      "target": "api::producto-color.producto-color",
+      "mappedBy": "color"
     }
   }
 }

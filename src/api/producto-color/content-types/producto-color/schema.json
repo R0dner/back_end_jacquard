@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "producto_colores",
+  "info": {
+    "singularName": "producto-color",
+    "pluralName": "producto-colores",
+    "displayName": "Producto Color",
+    "description": "Relación entre productos y colores con stock específico"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "codigo": {
+      "type": "uid",
+      "required": true
+    },
+    "producto": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::producto.producto",
+      "inversedBy": "producto_colores"
+    },
+    "color": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::color.color",
+      "inversedBy": "producto_colores"
+    },
+    "stock_disponible": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "precio_adicional": {
+      "type": "decimal",
+      "default": 0,
+      "description": "Precio adicional por este color específico"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true
+    },
+    "imagen_color": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "description": "Imagen específica del producto en este color"
+    }
+  }
+}

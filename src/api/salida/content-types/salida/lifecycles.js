@@ -1,66 +1,130 @@
 module.exports = {
-    async afterCreate(event) {
-      const { result } = event;
-  
-      // Verifica si el campo 'Productos' está definido y es un array
-      if (!result.Productos || !Array.isArray(result.Productos)) {
-        console.error('El campo "Productos" no está definido o no es un array.');
+  async afterCreate(event) {
+    const { result } = event;
+    
+    try {
+      // Validar que el result existe y tiene ID
+      if (!result || !result.id) {
+        console.error('Resultado del evento no válido:', result);
         return;
       }
-  
-      // Itera sobre cada producto en el componente repetible
-      for (const productoSalida of result.Productos) {
-        // Verifica si el campo 'producto' está definido
-        if (!productoSalida.producto || !productoSalida.producto.id) {
-          console.error('El campo "producto" no está definido o no tiene un ID válido.');
-          continue;
-        }
-  
-        try {
-          // Obtén el producto relacionado
-          const producto = await strapi.entityService.findOne(
-            'api::producto.producto',
-            productoSalida.producto.id
-          );
-  
-          if (!producto) {
-            console.error(`No se encontró un producto con ID: ${productoSalida.producto.id}`);
-            continue;
-          }
-  
-          // Obtén el registro de inventario correspondiente
-          let inventario = await strapi.entityService.findMany('api::inventario.inventario', {
-            filters: { producto: productoSalida.producto.id },
-          });
-  
-          if (inventario.length > 0) {
-            inventario = inventario[0];
-  
-            // Convierte los valores a números
-            const stockActual = Number(inventario.stock_actual);
-            const cantidadSolicitada = Number(productoSalida.cantidad_solicitada);
-  
-            // Verifica si hay suficiente stock
-            if (stockActual < cantidadSolicitada) {
-              console.error(`No hay suficiente stock para el producto con ID: ${productoSalida.producto.id}`);
-              continue;
+      
+      console.log('Procesando salida con ID:', result.id);
+      
+      // Poblar las relaciones antes de procesar
+      const populatedSalida = await strapi.entityService.findOne(
+        'api::salida.salida',
+        result.id,
+        {
+          populate: {
+            Productos: {
+              populate: {
+                producto: true,
+                color: true
+              }
             }
-  
-            // Actualiza el stock actual
-            const nuevoStock = stockActual - cantidadSolicitada;
-  
-            await strapi.entityService.update('api::inventario.inventario', inventario.id, {
-              data: {
-                stock_actual: nuevoStock,
-                ultima_salida: new Date(),
-              },
-            });
-          } else {
-            console.error(`No existe un registro de inventario para el producto con ID: ${productoSalida.producto.id}`);
           }
-        } catch (error) {
-          console.error('Error al actualizar el inventario:', error.message);
         }
+      );
+      
+      // Validar que se encontró el registro
+      if (!populatedSalida) {
+        console.error('No se pudo encontrar la salida con ID:', result.id);
+        return;
       }
-    },
-  };
+      
+      console.log('Salida poblada encontrada:', JSON.stringify(populatedSalida, null, 2));
+      
+      await updateInventoryFromSalida(populatedSalida);
+      
+    } catch (error) {
+      console.error('Error en afterCreate de salida:', error);
+      throw error;
+    }
+  }
+};
+
+async function updateInventoryFromSalida(salida) {
+  try {
+    // Validar que salida existe
+    if (!salida) {
+      console.error('Salida es null o undefined');
+      return;
+    }
+    
+    console.log('Procesando updateInventoryFromSalida con:', JSON.stringify(salida, null, 2));
+    
+    // Validar que existan los productos
+    if (!salida.Productos || !Array.isArray(salida.Productos)) {
+      console.error('No se encontraron productos en la salida o no es un array:', salida.Productos);
+      return;
+    }
+    
+    if (salida.Productos.length === 0) {
+      console.log('No hay productos para procesar en la salida');
+      return;
+    }
+    
+    for (const item of salida.Productos) {
+      const { producto, color, cantidad } = item;
+      
+      console.log('Procesando item:', { producto: producto?.id, color: color?.id, cantidad });
+      
+      // Validar que el producto, color y cantidad existen
+      if (!producto || !producto.id) {
+        console.error('Producto no válido en item:', item);
+        continue;
+      }
+      
+      if (!color || !color.id) {
+        console.error('Color no válido en item:', item);
+        continue;
+      }
+      
+      if (cantidad === undefined || cantidad <= 0) {
+        console.error('Cantidad no válida en item:', item);
+        continue;
+      }
+      
+      // Buscar inventario por color
+      const inventarioColor = await strapi.db.query('api::inventario-color.inventario-color').findOne({
+        where: {
+          producto: producto.id,
+          color: color.id
+        }
+      });
+      
+      if (inventarioColor && inventarioColor.stock_actual >= cantidad) {
+        // Reducir stock
+        const nuevoStock = inventarioColor.stock_actual - cantidad;
+        
+        await strapi.db.query('api::inventario-color.inventario-color').update({
+          where: { id: inventarioColor.id },
+          data: {
+            stock_actual: nuevoStock,
+            ultima_salida: new Date()
+          }
+        });
+        
+        console.log(`Stock actualizado para producto ${producto.id}, color ${color.id}: ${inventarioColor.stock_actual} - ${cantidad} = ${nuevoStock}`);
+        
+        // Actualizar inventario general
+        await updateGeneralInventory(producto.id);
+      } else {
+        const productoNombre = producto.nombre || 'Producto desconocido';
+        const colorNombre = color.nombre || 'Color desconocido';
+        const stockDisponible = inventarioColor ? inventarioColor.stock_actual : 0;
+        
+        const errorMessage = `Stock insuficiente para ${productoNombre} en color ${colorNombre}. Stock disponible: ${stockDisponible}, cantidad solicitada: ${cantidad}`;
+        console.error(errorMessage);
+        throw new Error(errorMessage);
+      }
+    }
+    
+    console.log('updateInventoryFromSalida completado exitosamente');
+    
+  } catch (error) {
+    console.error('Error en updateInventoryFromSalida:', error);
+    throw error;
+  }
+}

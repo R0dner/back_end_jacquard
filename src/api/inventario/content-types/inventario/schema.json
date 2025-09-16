@@ -5,7 +5,7 @@
     "singularName": "inventario",
     "pluralName": "inventarios",
     "displayName": "Inventario",
-    "description": "Inventario por producto y color"
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -13,19 +13,12 @@
   "pluginOptions": {},
   "attributes": {
     "stock_actual": {
-      "type": "biginteger",
-      "default": 0
+      "type": "biginteger"
     },
     "producto": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "oneToOne",
       "target": "api::producto.producto"
-    },
-    "color": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::color.color",
-      "required": true
     },
     "ultimo_ingreso": {
       "type": "datetime"

@@ -32,9 +32,8 @@
     },
     "productos": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::producto.producto",
-      "mappedBy": "colores"
+      "relation": "oneToMany",
+      "target": "api::producto.producto"
     }
   }
 }

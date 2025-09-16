@@ -36,18 +36,13 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images"
-      ]
+      "allowedTypes": ["images"]
     },
     "multimedia": {
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "videos"
-      ]
+      "allowedTypes": ["images", "videos"]
     },
     "valoracion": {
       "type": "decimal",
@@ -66,10 +61,6 @@
     "en_oferta": {
       "type": "boolean",
       "default": false
-    },
-    "stock_disponible": {
-      "type": "integer",
-      "default": 0
     },
     "talla": {
       "type": "relation",

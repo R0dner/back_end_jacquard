@@ -3,36 +3,32 @@
   "info": {
     "displayName": "items",
     "icon": "asterisk",
-    "description": "Items de productos con colores para ingresos"
+    "description": "Items de productos con múltiples colores para ingresos"
   },
   "options": {},
   "attributes": {
-    "cantidad": {
-      "type": "integer",
-      "required": true,
-      "min": 1
-    },
-    "costo_total": {
-      "type": "biginteger"
-    },
     "producto": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::producto.producto",
       "required": true
     },
-    "color": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::color.color",
+    "costo_unitario": {
+      "type": "decimal",
       "required": true
     },
-    "costo_unitario": {
-      "type": "integer",
-      "default": 0
+    "costo_total": {
+      "type": "decimal",
+      "required": true
     },
     "observaciones": {
       "type": "text"
+    },
+    "stock_por_colores": {
+      "type": "component",
+      "repeatable": true,
+      "component": "productos.stock-color",
+      "required": true
     }
   }
 }

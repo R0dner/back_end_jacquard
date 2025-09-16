@@ -19,17 +19,13 @@
       "target": "api::color.color",
       "required": true
     },
-    "cantidad_anterior": {
-      "type": "biginteger",
-      "default": "0"
-    },
-    "cantidad_posterior": {
-      "type": "biginteger"
-    },
-    "cantidad_solicitada": {
-      "type": "biginteger",
+    "cantidad": {
+      "type": "integer",
       "required": true,
       "min": 1
+    },
+    "precio_unitario": {
+      "type": "decimal"
     },
     "observaciones": {
       "type": "text"

@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_productos_stock_colores",
+  "info": {
+    "displayName": "Stock por Color",
+    "description": "Cantidad de stock por color específico"
+  },
+  "options": {},
+  "attributes": {
+    "color": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::color.color",
+      "required": true
+    },
+    "cantidad": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    }
+  }
+}

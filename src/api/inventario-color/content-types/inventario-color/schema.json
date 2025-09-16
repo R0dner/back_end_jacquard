@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "inventarios",
+  "collectionName": "inventario_colores",
   "info": {
-    "singularName": "inventario",
-    "pluralName": "inventarios",
-    "displayName": "Inventario General",
-    "description": "Vista general del inventario por producto"
+    "singularName": "inventario-color",
+    "pluralName": "inventario-colores",
+    "displayName": "Inventario por Color",
+    "description": "Control de stock por producto y color"
   },
   "options": {
     "draftAndPublish": false
@@ -14,11 +14,22 @@
   "attributes": {
     "producto": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::producto.producto",
       "required": true
     },
-    "stock_total": {
+    "color": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::color.color",
+      "required": true
+    },
+    "stock_actual": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "stock_minimo": {
       "type": "integer",
       "default": 0
     },

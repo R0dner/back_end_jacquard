@@ -18,33 +18,21 @@ export interface ProductosItemSimple extends Schema.Component {
 export interface ProductosItems extends Schema.Component {
   collectionName: 'components_productos_items';
   info: {
-    description: 'Items de productos con colores para ingresos';
+    description: 'Items de productos con m\u00FAltiples colores para ingresos';
     displayName: 'items';
     icon: 'asterisk';
   };
   attributes: {
-    cantidad: Attribute.Integer &
-      Attribute.Required &
-      Attribute.SetMinMax<
-        {
-          min: 1;
-        },
-        number
-      >;
-    color: Attribute.Relation<
-      'productos.items',
-      'oneToOne',
-      'api::color.color'
-    > &
-      Attribute.Required;
-    costo_total: Attribute.BigInteger;
-    costo_unitario: Attribute.Integer & Attribute.DefaultTo<0>;
+    costo_total: Attribute.Decimal & Attribute.Required;
+    costo_unitario: Attribute.Decimal & Attribute.Required;
     observaciones: Attribute.Text;
     producto: Attribute.Relation<
       'productos.items',
       'oneToOne',
       'api::producto.producto'
     > &
+      Attribute.Required;
+    stock_por_colores: Attribute.Component<'productos.stock-color', true> &
       Attribute.Required;
   };
 }
@@ -57,9 +45,7 @@ export interface ProductosItemsSalida extends Schema.Component {
     icon: 'ambulance';
   };
   attributes: {
-    cantidad_anterior: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
-    cantidad_posterior: Attribute.BigInteger;
-    cantidad_solicitada: Attribute.BigInteger &
+    cantidad: Attribute.Integer &
       Attribute.Required &
       Attribute.SetMinMax<
         {
@@ -74,10 +60,35 @@ export interface ProductosItemsSalida extends Schema.Component {
     > &
       Attribute.Required;
     observaciones: Attribute.Text;
+    precio_unitario: Attribute.Decimal;
     producto: Attribute.Relation<
       'productos.items-salida',
       'oneToOne',
       'api::producto.producto'
+    > &
+      Attribute.Required;
+  };
+}
+
+export interface ProductosStockColor extends Schema.Component {
+  collectionName: 'components_productos_stock_colores';
+  info: {
+    description: 'Cantidad de stock por color espec\u00EDfico';
+    displayName: 'Stock por Color';
+  };
+  attributes: {
+    cantidad: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    color: Attribute.Relation<
+      'productos.stock-color',
+      'oneToOne',
+      'api::color.color'
     > &
       Attribute.Required;
   };
@@ -89,6 +100,7 @@ declare module '@strapi/types' {
       'productos.item-simple': ProductosItemSimple;
       'productos.items': ProductosItems;
       'productos.items-salida': ProductosItemsSalida;
+      'productos.stock-color': ProductosStockColor;
     }
   }
 }

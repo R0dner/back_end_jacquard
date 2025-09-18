@@ -4,15 +4,12 @@ module.exports = {
     
     try {
       console.log('=== INICIO afterCreate ===');
-      console.log('Resultado completo:', JSON.stringify(result, null, 2));
       
-      // Solo procesar si el estado es "Aprobado"
       if (result.estado === 'Aprobado') {
         console.log('✅ Estado es Aprobado, procesando ingreso con ID:', result.id);
         await processApprovedIngreso(result.id);
       } else {
         console.log('❌ Estado no es Aprobado:', result.estado);
-        console.log('El ingreso se procesará cuando cambie a estado "Aprobado"');
       }
     } catch (error) {
       console.error('❌ Error en afterCreate de ingreso:', error);
@@ -25,15 +22,10 @@ module.exports = {
     
     try {
       console.log('=== INICIO afterUpdate ===');
-      console.log('Resultado actualizado:', JSON.stringify(result, null, 2));
-      console.log('Parámetros de actualización:', JSON.stringify(params, null, 2));
       
-      // Si se cambió el estado a "Aprobado", actualizar inventario
       if (result.estado === 'Aprobado') {
         console.log('✅ Estado cambió a Aprobado, procesando ingreso con ID:', result.id);
         await processApprovedIngreso(result.id);
-      } else {
-        console.log('❌ Estado no es Aprobado:', result.estado);
       }
     } catch (error) {
       console.error('❌ Error en afterUpdate de ingreso:', error);
@@ -44,9 +36,6 @@ module.exports = {
 
 async function processApprovedIngreso(ingresoId) {
   try {
-    console.log('🔍 Buscando ingreso con ID:', ingresoId);
-    
-    // Poblar las relaciones antes de procesar
     const populatedIngreso = await strapi.entityService.findOne(
       'api::ingreso.ingreso',
       ingresoId,
@@ -57,7 +46,12 @@ async function processApprovedIngreso(ingresoId) {
               producto: true,
               stock_por_colores: {
                 populate: {
-                  color: true
+                  color: true,
+                  stock_por_tallas: {
+                    populate: {
+                      talla: true
+                    }
+                  }
                 }
               }
             }
@@ -71,8 +65,6 @@ async function processApprovedIngreso(ingresoId) {
       return;
     }
     
-    console.log('✅ Ingreso encontrado y poblado:', JSON.stringify(populatedIngreso, null, 2));
-    
     await updateInventoryFromIngreso(populatedIngreso);
   } catch (error) {
     console.error('❌ Error en processApprovedIngreso:', error);
@@ -82,22 +74,8 @@ async function processApprovedIngreso(ingresoId) {
 
 async function updateInventoryFromIngreso(ingreso) {
   try {
-    console.log('🔄 Iniciando updateInventoryFromIngreso');
-    
-    // Validar que ingreso existe
-    if (!ingreso) {
-      console.error('❌ Ingreso es null o undefined');
-      return;
-    }
-    
-    // Validar que existan los productos
-    if (!ingreso.Productos || !Array.isArray(ingreso.Productos)) {
-      console.error('❌ No se encontraron productos en el ingreso:', ingreso.Productos);
-      return;
-    }
-    
-    if (ingreso.Productos.length === 0) {
-      console.log('⚠️ No hay productos para procesar en el ingreso');
+    if (!ingreso?.Productos?.length) {
+      console.error('❌ No se encontraron productos en el ingreso');
       return;
     }
     
@@ -107,7 +85,12 @@ async function updateInventoryFromIngreso(ingreso) {
       await processProductItem(item);
     }
     
-    console.log('✅ updateInventoryFromIngreso completado exitosamente');
+    // Actualizar inventario general después de procesar todos los productos
+    for (const item of ingreso.Productos) {
+      await updateGeneralInventory(item.producto.id);
+    }
+    
+    console.log('✅ Inventario actualizado exitosamente');
     
   } catch (error) {
     console.error('❌ Error en updateInventoryFromIngreso:', error);
@@ -119,42 +102,16 @@ async function processProductItem(item) {
   try {
     const { producto, stock_por_colores } = item;
     
-    // Validar que el producto existe
-    if (!producto || !producto.id) {
-      console.error('❌ Producto no válido en item:', item);
+    if (!producto?.id || !stock_por_colores?.length) {
+      console.error('❌ Producto o colores no válidos');
       return;
     }
     
-    console.log('📦 Procesando producto:', producto.id, producto.nombre);
-    
-    // Validar que existan colores
-    if (!stock_por_colores || !Array.isArray(stock_por_colores)) {
-      console.error('❌ No se encontraron colores para el producto:', producto.id);
-      return;
-    }
-    
-    let totalCantidadProducto = 0;
+    console.log('📦 Procesando producto:', producto.nombre);
     
     for (const stockColor of stock_por_colores) {
-      const { color, cantidad } = stockColor;
-      
-      console.log('🎨 Procesando color:', color?.nombre, 'cantidad:', cantidad);
-      
-      // Validar color y cantidad
-      if (!color || !color.id || cantidad === undefined || cantidad === null) {
-        console.error('❌ Color o cantidad no válidos:', stockColor);
-        continue;
-      }
-      
-      totalCantidadProducto += parseInt(cantidad) || 0;
-      
-      await updateInventarioColor(producto, color, cantidad);
+      await processColorStock(producto, stockColor);
     }
-    
-    console.log('📊 Total cantidad para producto', producto.nombre, ':', totalCantidadProducto);
-    
-    // Actualizar inventario general
-    await updateGeneralInventory(producto.id);
     
   } catch (error) {
     console.error('❌ Error en processProductItem:', error);
@@ -162,85 +119,177 @@ async function processProductItem(item) {
   }
 }
 
-async function updateInventarioColor(producto, color, cantidad) {
+async function processColorStock(producto, stockColor) {
   try {
-    // Buscar registro existente
-    let inventarioColor = await strapi.db.query('api::inventario-color.inventario-color').findOne({
-      where: {
-        producto: producto.id,
-        color: color.id
-      }
-    });
+    const { color, cantidad, stock_por_tallas } = stockColor;
     
+    if (!color?.id) {
+      console.error('❌ Color no válido');
+      return;
+    }
+    
+    console.log('🎨 Procesando color:', color.nombre);
+    
+    // CASO 1: Con detalle de tallas
+    if (stock_por_tallas?.length > 0) {
+      console.log('👕 Procesando con tallas detalladas');
+      
+      for (const stockTalla of stock_por_tallas) {
+        await updateInventoryRecord(producto, color, stockTalla.talla, stockTalla.cantidad);
+      }
+      
+      // Actualizar registro consolidado por color (sin talla)
+      await updateColorSummary(producto, color);
+    }
+    // CASO 2: Solo por color (sin tallas)
+    else if (cantidad > 0) {
+      console.log('🎨 Procesando solo por color (sin tallas)');
+      
+      await updateInventoryRecord(producto, color, null, cantidad);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error en processColorStock:', error);
+    throw error;
+  }
+}
+
+async function updateInventoryRecord(producto, color, talla, cantidad) {
+  try {
     const cantidadNumerica = parseInt(cantidad) || 0;
     
-    if (inventarioColor) {
-      // Actualizar stock existente
-      const nuevoStock = inventarioColor.stock_actual + cantidadNumerica;
+    // Buscar registro existente
+    const whereClause = {
+      producto: producto.id,
+      color: color.id
+    };
+    
+    // Agregar talla al filtro si existe
+    if (talla) {
+      whereClause.talla = talla.id;
+    } else {
+      whereClause.talla = null;
+    }
+    
+    let inventarioRecord = await strapi.db.query('api::inventario-color.inventario-color').findOne({
+      where: whereClause
+    });
+    
+    const descripcion = talla ? 
+      `${producto.nombre} - ${color.nombre} - ${talla.sigla}` : 
+      `${producto.nombre} - ${color.nombre}`;
+    
+    if (inventarioRecord) {
+      // Actualizar existente
+      const nuevoStock = inventarioRecord.stock_actual + cantidadNumerica;
       
       await strapi.db.query('api::inventario-color.inventario-color').update({
-        where: { id: inventarioColor.id },
+        where: { id: inventarioRecord.id },
         data: {
           stock_actual: nuevoStock,
           ultimo_ingreso: new Date()
         }
       });
       
-      console.log(`✅ Stock actualizado: ${producto.nombre} - ${color.nombre}: ${inventarioColor.stock_actual} + ${cantidadNumerica} = ${nuevoStock}`);
+      console.log(`✅ Actualizado: ${descripcion}: ${inventarioRecord.stock_actual} + ${cantidadNumerica} = ${nuevoStock}`);
     } else {
-      // Crear nuevo registro
+      // Crear nuevo
+      const codigoSufijo = talla ? `-${talla.sigla}` : '';
+      
       await strapi.db.query('api::inventario-color.inventario-color').create({
         data: {
           producto: producto.id,
           color: color.id,
+          talla: talla?.id || null,
           stock_actual: cantidadNumerica,
           ultimo_ingreso: new Date(),
-          codigo: `${producto.codigo}-${color.nombre}`,
+          codigo: `${producto.codigo || 'PROD'}-${color.nombre}${codigoSufijo}`,
           unidad_de_medida: 'unidad'
         }
       });
       
-      console.log(`✅ Nuevo inventario por color creado: ${producto.nombre} - ${color.nombre}: ${cantidadNumerica}`);
+      console.log(`✅ Creado: ${descripcion}: ${cantidadNumerica}`);
     }
     
   } catch (error) {
-    console.error('❌ Error en updateInventarioColor:', error);
+    console.error('❌ Error en updateInventoryRecord:', error);
+    throw error;
+  }
+}
+
+async function updateColorSummary(producto, color) {
+  try {
+    // Sumar todas las tallas de este color
+    const tallasStock = await strapi.db.query('api::inventario-color.inventario-color').findMany({
+      where: {
+        producto: producto.id,
+        color: color.id,
+        talla: { $notNull: true } // Solo registros con talla
+      }
+    });
+    
+    const totalStock = tallasStock.reduce((sum, record) => sum + record.stock_actual, 0);
+    
+    // Buscar o crear registro consolidado (sin talla)
+    let consolidatedRecord = await strapi.db.query('api::inventario-color.inventario-color').findOne({
+      where: {
+        producto: producto.id,
+        color: color.id,
+        talla: null // Registro consolidado sin talla específica
+      }
+    });
+    
+    if (consolidatedRecord) {
+      await strapi.db.query('api::inventario-color.inventario-color').update({
+        where: { id: consolidatedRecord.id },
+        data: {
+          stock_actual: totalStock,
+          ultimo_ingreso: new Date()
+        }
+      });
+    } else {
+      await strapi.db.query('api::inventario-color.inventario-color').create({
+        data: {
+          producto: producto.id,
+          color: color.id,
+          talla: null,
+          stock_actual: totalStock,
+          ultimo_ingreso: new Date(),
+          codigo: `${producto.codigo || 'PROD'}-${color.nombre}-TOTAL`,
+          unidad_de_medida: 'unidad'
+        }
+      });
+    }
+    
+    console.log(`📊 Consolidado actualizado: ${producto.nombre} - ${color.nombre} TOTAL: ${totalStock}`);
+    
+  } catch (error) {
+    console.error('❌ Error en updateColorSummary:', error);
     throw error;
   }
 }
 
 async function updateGeneralInventory(productoId) {
   try {
-    console.log('📊 Actualizando inventario general para producto:', productoId);
-    
-    // Validar que se recibió un ID válido
-    if (!productoId) {
-      console.error('❌ ID de producto no válido:', productoId);
-      return;
-    }
-    
-    // Calcular stock total por producto desde inventario por colores
+    // Calcular desde registros consolidados (sin talla específica)
     const inventarioColores = await strapi.db.query('api::inventario-color.inventario-color').findMany({
-      where: { producto: productoId }
+      where: { 
+        producto: productoId,
+        talla: null // Solo registros consolidados
+      }
     });
     
-    console.log('🎨 Inventarios por color encontrados:', inventarioColores.length);
-    
     const stockTotal = inventarioColores.reduce((total, item) => {
-      const stock = parseInt(item.stock_actual) || 0;
-      console.log(`   Color ${item.id}: ${stock} unidades`);
-      return total + stock;
+      return total + (parseInt(item.stock_actual) || 0);
     }, 0);
     
-    console.log(`📊 Stock total calculado para producto ${productoId}:`, stockTotal);
+    console.log(`📊 Stock total calculado para producto ${productoId}: ${stockTotal}`);
     
-    // Buscar inventario general existente
     let inventarioGeneral = await strapi.db.query('api::inventario.inventario').findOne({
       where: { producto: productoId }
     });
     
     if (inventarioGeneral) {
-      // Actualizar existente
       await strapi.db.query('api::inventario.inventario').update({
         where: { id: inventarioGeneral.id },
         data: {
@@ -248,11 +297,8 @@ async function updateGeneralInventory(productoId) {
           ultimo_ingreso: new Date()
         }
       });
-      
-      console.log(`✅ Inventario general ACTUALIZADO para producto ${productoId}: ${stockTotal}`);
     } else {
-      // Crear nuevo
-      const nuevoInventario = await strapi.db.query('api::inventario.inventario').create({
+      await strapi.db.query('api::inventario.inventario').create({
         data: {
           producto: productoId,
           stock_total: stockTotal,
@@ -260,17 +306,9 @@ async function updateGeneralInventory(productoId) {
           unidad_de_medida: 'unidad'
         }
       });
-      
-      console.log(`✅ Inventario general CREADO para producto ${productoId}: ${stockTotal}`, nuevoInventario);
     }
     
-    // Verificar que se guardó correctamente
-    const verificacion = await strapi.db.query('api::inventario.inventario').findOne({
-      where: { producto: productoId },
-      populate: { producto: true }
-    });
-    
-    console.log('🔍 Verificación - Inventario guardado:', verificacion);
+    console.log(`✅ Inventario general actualizado: ${stockTotal}`);
     
   } catch (error) {
     console.error('❌ Error en updateGeneralInventory:', error);

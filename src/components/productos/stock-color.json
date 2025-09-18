@@ -2,7 +2,7 @@
   "collectionName": "components_productos_stock_colores",
   "info": {
     "displayName": "Stock por Color",
-    "description": "Cantidad de stock por color específico"
+    "description": "Cantidad de stock por color específico con detalle opcional de tallas"
   },
   "options": {},
   "attributes": {
@@ -14,8 +14,15 @@
     },
     "cantidad": {
       "type": "integer",
-      "required": true,
-      "min": 1
+      "required": false,
+      "min": 0,
+      "description": "Cantidad total del color. Si hay tallas, se calcula automáticamente"
+    },
+    "stock_por_tallas": {
+      "type": "component",
+      "repeatable": true,
+      "component": "productos.stock-por-tallas",
+      "required": false
     }
   }
 }

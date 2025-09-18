@@ -654,7 +654,7 @@ export interface ApiInventarioColorInventarioColor
   extends Schema.CollectionType {
   collectionName: 'inventario_colores';
   info: {
-    description: 'Control de stock por producto y color';
+    description: 'Control de stock por producto, color y opcionalmente talla';
     displayName: 'Inventario por Color';
     pluralName: 'inventario-colores';
     singularName: 'inventario-color';
@@ -687,6 +687,11 @@ export interface ApiInventarioColorInventarioColor
       Attribute.Required &
       Attribute.DefaultTo<0>;
     stock_minimo: Attribute.Integer & Attribute.DefaultTo<0>;
+    talla: Attribute.Relation<
+      'api::inventario-color.inventario-color',
+      'manyToOne',
+      'api::talla.talla'
+    >;
     ultima_salida: Attribute.DateTime;
     ultimo_ingreso: Attribute.DateTime;
     unidad_de_medida: Attribute.Enumeration<['docena', 'paquete', 'unidad']> &

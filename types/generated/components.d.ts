@@ -73,15 +73,14 @@ export interface ProductosItemsSalida extends Schema.Component {
 export interface ProductosStockColor extends Schema.Component {
   collectionName: 'components_productos_stock_colores';
   info: {
-    description: 'Cantidad de stock por color espec\u00EDfico';
+    description: 'Cantidad de stock por color espec\u00EDfico con detalle opcional de tallas';
     displayName: 'Stock por Color';
   };
   attributes: {
     cantidad: Attribute.Integer &
-      Attribute.Required &
       Attribute.SetMinMax<
         {
-          min: 1;
+          min: 0;
         },
         number
       >;
@@ -89,6 +88,31 @@ export interface ProductosStockColor extends Schema.Component {
       'productos.stock-color',
       'oneToOne',
       'api::color.color'
+    > &
+      Attribute.Required;
+    stock_por_tallas: Attribute.Component<'productos.stock-por-tallas', true>;
+  };
+}
+
+export interface ProductosStockPorTallas extends Schema.Component {
+  collectionName: 'components_productos_stock_por_tallas';
+  info: {
+    description: 'Cantidad espec\u00EDfica por talla dentro de un color';
+    displayName: 'Stock por Tallas';
+  };
+  attributes: {
+    cantidad: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    talla: Attribute.Relation<
+      'productos.stock-por-tallas',
+      'oneToOne',
+      'api::talla.talla'
     > &
       Attribute.Required;
   };
@@ -101,6 +125,7 @@ declare module '@strapi/types' {
       'productos.items': ProductosItems;
       'productos.items-salida': ProductosItemsSalida;
       'productos.stock-color': ProductosStockColor;
+      'productos.stock-por-tallas': ProductosStockPorTallas;
     }
   }
 }

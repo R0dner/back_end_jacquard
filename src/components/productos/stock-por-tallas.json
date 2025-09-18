@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_productos_stock_por_tallas",
+  "info": {
+    "displayName": "Stock por Tallas",
+    "description": "Cantidad específica por talla dentro de un color"
+  },
+  "options": {},
+  "attributes": {
+    "talla": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::talla.talla",
+      "required": true
+    },
+    "cantidad": {
+      "type": "integer",
+      "required": true,
+      "min": 0
+    }
+  }
+}

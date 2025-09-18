@@ -5,7 +5,7 @@
     "singularName": "inventario-color",
     "pluralName": "inventario-colores",
     "displayName": "Inventario por Color",
-    "description": "Control de stock por producto y color"
+    "description": "Control de stock por producto, color y opcionalmente talla"
   },
   "options": {
     "draftAndPublish": false
@@ -23,6 +23,12 @@
       "relation": "manyToOne",
       "target": "api::color.color",
       "required": true
+    },
+    "talla": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::talla.talla",
+      "required": false
     },
     "stock_actual": {
       "type": "integer",

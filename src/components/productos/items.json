@@ -1,9 +1,9 @@
 {
+  "kind": "component",
   "collectionName": "components_productos_items",
   "info": {
-    "displayName": "items",
-    "icon": "asterisk",
-    "description": "Items de productos con múltiples colores para ingresos"
+    "displayName": "Productos Items",
+    "description": "Items de productos con precios y configuraciones"
   },
   "options": {},
   "attributes": {
@@ -13,22 +13,64 @@
       "target": "api::producto.producto",
       "required": true
     },
-    "costo_unitario": {
-      "type": "decimal",
+    "color": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::color.color",
       "required": true
     },
-    "costo_total": {
+    "talla": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::talla.talla",
+      "required": false
+    },
+    "cantidad": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "precio_unitario": {
       "type": "decimal",
-      "required": true
+      "required": true,
+      "min": 0,
+      "description": "Precio de compra por unidad"
+    },
+    "margen_ganancia": {
+      "type": "decimal",
+      "default": 50,
+      "min": 0,
+      "description": "Margen de ganancia en porcentaje"
+    },
+    "precio_venta_sugerido": {
+      "type": "decimal",
+      "min": 0,
+      "description": "Precio de venta calculado automáticamente"
+    },
+    "stock_minimo": {
+      "type": "integer",
+      "default": 5,
+      "min": 0,
+      "description": "Stock mínimo para este producto/color/talla"
+    },
+    "unidad_de_medida": {
+      "type": "enumeration",
+      "enum": ["docena", "paquete", "unidad"],
+      "default": "unidad"
+    },
+    "aplicar_oferta": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marcar si este producto entrará en oferta"
+    },
+    "precio_oferta": {
+      "type": "decimal",
+      "min": 0,
+      "description": "Precio de oferta (solo si aplicar_oferta es true)"
     },
     "observaciones": {
-      "type": "text"
-    },
-    "stock_por_colores": {
-      "type": "component",
-      "repeatable": true,
-      "component": "productos.stock-color",
-      "required": true
+      "type": "text",
+      "description": "Observaciones específicas para este item"
     }
   }
 }

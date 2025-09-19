@@ -604,7 +604,7 @@ export interface ApiGrupoProductoGrupoProducto extends Schema.CollectionType {
 export interface ApiIngresoIngreso extends Schema.CollectionType {
   collectionName: 'ingresos';
   info: {
-    description: '';
+    description: 'Control de ingresos de productos con configuraciones de precios';
     displayName: 'Ingresos';
     pluralName: 'ingresos';
     singularName: 'ingreso';
@@ -626,8 +626,11 @@ export interface ApiIngresoIngreso extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    estado: Attribute.Enumeration<['Creado', 'Aprobado']>;
-    fecha_ingreso: Attribute.Date;
+    estado: Attribute.Enumeration<
+      ['Borrador', 'Creado', 'Aprobado', 'Rechazado']
+    > &
+      Attribute.DefaultTo<'Borrador'>;
+    fecha_ingreso: Attribute.Date & Attribute.Required;
     ingresado_por: Attribute.Relation<
       'api::ingreso.ingreso',
       'oneToOne',
@@ -635,11 +638,15 @@ export interface ApiIngresoIngreso extends Schema.CollectionType {
     >;
     motivo_ingreso: Attribute.String;
     numero_factura: Attribute.String;
-    Productos: Attribute.Component<'productos.items', true>;
+    observaciones_generales: Attribute.Text;
+    Productos: Attribute.Component<'productos.items', true> &
+      Attribute.Required;
     tipo_ingreso: Attribute.Enumeration<
       ['Producci\u00F3n', 'Compra', 'Donaci\u00F3n', 'Transferencia', 'Otros']
     > &
       Attribute.DefaultTo<'Producci\u00F3n'>;
+    total_costo: Attribute.Decimal;
+    total_items: Attribute.Integer;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
       'api::ingreso.ingreso',
@@ -654,8 +661,8 @@ export interface ApiInventarioColorInventarioColor
   extends Schema.CollectionType {
   collectionName: 'inventario_colores';
   info: {
-    description: 'Control de stock por producto, color y opcionalmente talla';
-    displayName: 'Inventario por Color';
+    description: 'Control de stock por producto, color y opcionalmente talla con precios';
+    displayName: 'Inventario por Color y Talla';
     pluralName: 'inventario-colores';
     singularName: 'inventario-color';
   };
@@ -677,6 +684,19 @@ export interface ApiInventarioColorInventarioColor
       'admin::user'
     > &
       Attribute.Private;
+    en_oferta: Attribute.Boolean & Attribute.DefaultTo<false>;
+    estado_producto: Attribute.Enumeration<
+      ['Activo', 'Inactivo', 'Descontinuado', 'Agotado']
+    > &
+      Attribute.DefaultTo<'Activo'>;
+    fecha_fin_oferta: Attribute.Date;
+    fecha_inicio_oferta: Attribute.Date;
+    fecha_ultimo_cambio_precio: Attribute.DateTime;
+    margen_ganancia: Attribute.Decimal & Attribute.DefaultTo<0>;
+    observaciones: Attribute.Text;
+    precio_oferta: Attribute.Decimal;
+    precio_unitario: Attribute.Decimal & Attribute.DefaultTo<0>;
+    precio_venta_sugerido: Attribute.Decimal & Attribute.DefaultTo<0>;
     producto: Attribute.Relation<
       'api::inventario-color.inventario-color',
       'manyToOne',
@@ -912,7 +932,6 @@ export interface ApiProductoProducto extends Schema.CollectionType {
     > &
       Attribute.Private;
     descripcion: Attribute.Text & Attribute.Required;
-    en_oferta: Attribute.Boolean & Attribute.DefaultTo<false>;
     fecha_disponible: Attribute.Date;
     grupos_de_productos: Attribute.Relation<
       'api::producto.producto',
@@ -927,13 +946,9 @@ export interface ApiProductoProducto extends Schema.CollectionType {
         minLength: 3;
       }>;
     observaciones: Attribute.Text;
-    precio_oferta: Attribute.Decimal;
-    precio_venta: Attribute.Decimal &
-      Attribute.Required &
-      Attribute.DefaultTo<0>;
-    talla: Attribute.Relation<
+    tallas: Attribute.Relation<
       'api::producto.producto',
-      'oneToOne',
+      'oneToMany',
       'api::talla.talla'
     >;
     updatedAt: Attribute.DateTime;

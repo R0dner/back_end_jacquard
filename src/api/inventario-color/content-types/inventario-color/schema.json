@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "inventario_colores",
+  "collectionName": "inventario_colores", 
   "info": {
     "singularName": "inventario-color",
     "pluralName": "inventario-colores",
-    "displayName": "Inventario por Color",
-    "description": "Control de stock por producto, color y opcionalmente talla"
+    "displayName": "Inventario por Color y Talla",
+    "description": "Control de stock por producto, color y opcionalmente talla con precios"
   },
   "options": {
     "draftAndPublish": false
@@ -52,6 +52,49 @@
       "type": "enumeration",
       "enum": ["docena", "paquete", "unidad"],
       "default": "unidad"
+    },
+    "precio_unitario": {
+      "type": "decimal",
+      "default": 0,
+      "description": "Precio unitario de compra"
+    },
+    "precio_venta_sugerido": {
+      "type": "decimal",
+      "default": 0,
+      "description": "Precio de venta sugerido basado en margen"
+    },
+    "precio_oferta": {
+      "type": "decimal",
+      "description": "Precio de oferta (opcional)"
+    },
+    "en_oferta": {
+      "type": "boolean",
+      "default": false
+    },
+    "fecha_inicio_oferta": {
+      "type": "date",
+      "description": "Fecha de inicio de oferta"
+    },
+    "fecha_fin_oferta": {
+      "type": "date", 
+      "description": "Fecha de fin de oferta"
+    },
+    "margen_ganancia": {
+      "type": "decimal",
+      "default": 0,
+      "description": "Margen de ganancia en porcentaje"
+    },
+    "fecha_ultimo_cambio_precio": {
+      "type": "datetime"
+    },
+    "estado_producto": {
+      "type": "enumeration",
+      "enum": ["Activo", "Inactivo", "Descontinuado", "Agotado"],
+      "default": "Activo"
+    },
+    "observaciones": {
+      "type": "text",
+      "description": "Observaciones específicas para este item de inventario"
     }
   }
 }

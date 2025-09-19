@@ -18,22 +18,77 @@ export interface ProductosItemSimple extends Schema.Component {
 export interface ProductosItems extends Schema.Component {
   collectionName: 'components_productos_items';
   info: {
-    description: 'Items de productos con m\u00FAltiples colores para ingresos';
-    displayName: 'items';
-    icon: 'asterisk';
+    description: 'Items de productos con precios y configuraciones';
+    displayName: 'Productos Items';
   };
   attributes: {
-    costo_total: Attribute.Decimal & Attribute.Required;
-    costo_unitario: Attribute.Decimal & Attribute.Required;
+    aplicar_oferta: Attribute.Boolean & Attribute.DefaultTo<false>;
+    cantidad: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    color: Attribute.Relation<
+      'productos.items',
+      'oneToOne',
+      'api::color.color'
+    > &
+      Attribute.Required;
+    margen_ganancia: Attribute.Decimal &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Attribute.DefaultTo<50>;
     observaciones: Attribute.Text;
+    precio_oferta: Attribute.Decimal &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    precio_unitario: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    precio_venta_sugerido: Attribute.Decimal &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
     producto: Attribute.Relation<
       'productos.items',
       'oneToOne',
       'api::producto.producto'
     > &
       Attribute.Required;
-    stock_por_colores: Attribute.Component<'productos.stock-color', true> &
-      Attribute.Required;
+    stock_minimo: Attribute.Integer &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Attribute.DefaultTo<5>;
+    talla: Attribute.Relation<
+      'productos.items',
+      'oneToOne',
+      'api::talla.talla'
+    >;
+    unidad_de_medida: Attribute.Enumeration<['docena', 'paquete', 'unidad']> &
+      Attribute.DefaultTo<'unidad'>;
   };
 }
 

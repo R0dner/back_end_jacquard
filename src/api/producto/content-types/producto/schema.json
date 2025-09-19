@@ -50,23 +50,6 @@
       "min": 0,
       "max": 5
     },
-    "precio_venta": {
-      "type": "decimal",
-      "default": 0,
-      "required": true
-    },
-    "precio_oferta": {
-      "type": "decimal"
-    },
-    "en_oferta": {
-      "type": "boolean",
-      "default": false
-    },
-    "talla": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::talla.talla"
-    },
     "fecha_disponible": {
       "type": "date"
     },
@@ -80,6 +63,11 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::color.color"
+    },
+    "tallas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::talla.talla"
     }
   }
 }

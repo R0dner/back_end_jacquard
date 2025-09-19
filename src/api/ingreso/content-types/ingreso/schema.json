@@ -5,7 +5,7 @@
     "singularName": "ingreso",
     "pluralName": "ingresos",
     "displayName": "Ingresos",
-    "description": ""
+    "description": "Control de ingresos de productos con configuraciones de precios"
   },
   "options": {
     "draftAndPublish": false
@@ -16,7 +16,7 @@
       "type": "enumeration",
       "enum": [
         "Producción",
-        "Compra",
+        "Compra", 
         "Donación",
         "Transferencia",
         "Otros"
@@ -24,7 +24,8 @@
       "default": "Producción"
     },
     "fecha_ingreso": {
-      "type": "date"
+      "type": "date",
+      "required": true
     },
     "motivo_ingreso": {
       "type": "string"
@@ -35,14 +36,18 @@
     "Productos": {
       "type": "component",
       "repeatable": true,
-      "component": "productos.items"
+      "component": "productos.items",
+      "required": true
     },
     "estado": {
       "type": "enumeration",
       "enum": [
+        "Borrador",
         "Creado",
-        "Aprobado"
-      ]
+        "Aprobado",
+        "Rechazado"
+      ],
+      "default": "Borrador"
     },
     "ingresado_por": {
       "type": "relation",
@@ -51,12 +56,24 @@
     },
     "aprobado_por": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToOne", 
       "target": "admin::user"
     },
     "aprobado": {
       "type": "boolean",
       "default": false
+    },
+    "observaciones_generales": {
+      "type": "text",
+      "description": "Observaciones generales del ingreso"
+    },
+    "total_costo": {
+      "type": "decimal",
+      "description": "Total del costo del ingreso"
+    },
+    "total_items": {
+      "type": "integer",
+      "description": "Total de items en el ingreso"
     }
   }
 }

@@ -5,4 +5,10 @@ module.exports = ({ env }) => ({
   apiToken: {
     salt: env('API_TOKEN_SALT'),
   },
+  // AGREGA ESTO para forzar regeneración de permisos
+  autoOpen: false,
+  watchIgnoreFiles: [
+    '**/config/sync/**',
+    '**/src/api/**/schema.json'
+  ],
 });

@@ -1,16 +1,7 @@
 module.exports = {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   */
   register(/*{ strapi }*/) {},
 
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   */
   async bootstrap({ strapi }) {
-    // Habilitar permisos públicos para inventario-color
     try {
       const publicRole = await strapi
         .query('plugin::users-permissions.role')
@@ -21,7 +12,8 @@ module.exports = {
         return;
       }
 
-      // Content types que necesitan permisos públicos
+      console.log('📋 Rol público encontrado, ID:', publicRole.id);
+
       const contentTypesToEnable = [
         {
           uid: 'api::inventario-color.inventario-color',
@@ -49,8 +41,8 @@ module.exports = {
         for (const action of contentType.actions) {
           const permissionName = `${contentType.uid}.${action}`;
           
-          // Buscar si el permiso ya existe
-          const existingPermission = await strapi
+          // Buscar permiso existente
+          let permission = await strapi
             .query('plugin::users-permissions.permission')
             .findOne({
               where: {
@@ -59,18 +51,18 @@ module.exports = {
               }
             });
 
-          if (existingPermission) {
-            // Actualizar permiso existente
+          if (permission) {
+            // Actualizar y FORZAR enabled = true
             await strapi
               .query('plugin::users-permissions.permission')
               .update({
-                where: { id: existingPermission.id },
+                where: { id: permission.id },
                 data: { enabled: true }
               });
-            console.log(`✅ Permiso habilitado: ${permissionName}`);
+            console.log(`✅ Permiso ACTUALIZADO y habilitado: ${permissionName}`);
           } else {
-            // Crear nuevo permiso
-            await strapi
+            // Crear nuevo permiso YA habilitado
+            permission = await strapi
               .query('plugin::users-permissions.permission')
               .create({
                 data: {
@@ -79,14 +71,21 @@ module.exports = {
                   enabled: true
                 }
               });
-            console.log(`✅ Permiso creado: ${permissionName}`);
+            console.log(`✅ Permiso CREADO y habilitado: ${permissionName}`);
           }
+
+          // Verificar que quedó habilitado
+          const verificar = await strapi
+            .query('plugin::users-permissions.permission')
+            .findOne({ where: { id: permission.id } });
+          
+          console.log(`🔍 Verificación ${permissionName}: enabled=${verificar.enabled}`);
         }
       }
 
-      console.log('🎉 Todos los permisos públicos configurados correctamente');
+      console.log('🎉 Configuración completada');
     } catch (error) {
-      console.error('❌ Error configurando permisos:', error);
+      console.error('❌ Error:', error.message);
     }
   },
 };

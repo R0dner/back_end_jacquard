@@ -8,7 +8,7 @@ module.exports = {
         .findOne({ where: { type: 'public' } });
 
       if (!publicRole) {
-        console.log('⚠️ Rol público no encontrado');
+        console.log('⚠️ Rol público no encontrado.');
         return;
       }
 

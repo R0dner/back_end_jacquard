@@ -3,7 +3,7 @@
   "info": {
     "displayName": "Items_salida",
     "icon": "ambulance",
-    "description": "Items de productos con colores para salidas"
+    "description": "Items de productos con colores y tallas para salidas"
   },
   "options": {},
   "attributes": {
@@ -19,13 +19,28 @@
       "target": "api::color.color",
       "required": true
     },
+    "talla": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::talla.talla",
+      "required": false
+    },
     "cantidad": {
       "type": "integer",
       "required": true,
       "min": 1
     },
     "precio_unitario": {
-      "type": "decimal"
+      "type": "decimal",
+      "description": "Precio unitario aplicado en esta salida"
+    },
+    "precio_venta": {
+      "type": "decimal",
+      "description": "Precio de venta final (puede ser precio normal o de oferta)"
+    },
+    "subtotal": {
+      "type": "decimal",
+      "description": "cantidad * precio_venta"
     },
     "observaciones": {
       "type": "text"

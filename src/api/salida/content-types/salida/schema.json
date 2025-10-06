@@ -5,7 +5,7 @@
     "singularName": "salida",
     "pluralName": "salidas",
     "displayName": "Salidas",
-    "description": ""
+    "description": "Control de salidas de inventario con validación de stock"
   },
   "options": {
     "draftAndPublish": false
@@ -18,9 +18,20 @@
         "Entrega",
         "Venta directa",
         "Preventa",
-        "Devolución"
+        "Devolución",
+        "Transferencia",
+        "Otros"
       ],
       "default": "Entrega"
+    },
+    "fecha_salida": {
+      "type": "date",
+      "required": true,
+      "default": "2025-01-01"
+    },
+    "numero_documento": {
+      "type": "string",
+      "description": "Número de factura, guía o documento de salida"
     },
     "Aclaracion": {
       "type": "text"
@@ -28,7 +39,19 @@
     "Productos": {
       "type": "component",
       "repeatable": true,
-      "component": "productos.items-salida"
+      "component": "productos.items-salida",
+      "required": true
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": [
+        "Borrador",
+        "Pendiente",
+        "Aprobada",
+        "Rechazada",
+        "Completada"
+      ],
+      "default": "Borrador"
     },
     "solicitado_por": {
       "type": "relation",
@@ -39,6 +62,14 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "admin::user"
+    },
+    "total_items": {
+      "type": "integer",
+      "description": "Total de items en la salida"
+    },
+    "total_monto": {
+      "type": "decimal",
+      "description": "Monto total de la salida"
     }
   }
 }

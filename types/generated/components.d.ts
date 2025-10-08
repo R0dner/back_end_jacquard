@@ -95,7 +95,7 @@ export interface ProductosItems extends Schema.Component {
 export interface ProductosItemsSalida extends Schema.Component {
   collectionName: 'components_productos_items_salidas';
   info: {
-    description: 'Items de productos con colores para salidas';
+    description: 'Items de productos con colores y tallas para salidas';
     displayName: 'Items_salida';
     icon: 'ambulance';
   };
@@ -115,13 +115,17 @@ export interface ProductosItemsSalida extends Schema.Component {
     > &
       Attribute.Required;
     observaciones: Attribute.Text;
-    precio_unitario: Attribute.Decimal;
     producto: Attribute.Relation<
       'productos.items-salida',
       'oneToOne',
       'api::producto.producto'
     > &
       Attribute.Required;
+    talla: Attribute.Relation<
+      'productos.items-salida',
+      'oneToOne',
+      'api::talla.talla'
+    >;
   };
 }
 

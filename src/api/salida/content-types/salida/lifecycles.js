@@ -1,17 +1,29 @@
 module.exports = {
-  // Calcular totales y validar stock antes de crear
+  // Calcular totales antes de crear
   async beforeCreate(event) {
     const { data } = event.params;
     
     try {
       console.log('=== INICIO beforeCreate SALIDA ===');
+      console.log('📦 Data completa recibida:', JSON.stringify(data, null, 2));
       
-      // Calcular totales automáticamente
+      // Calcular total de items
       await calculateTotals(data);
       
-      // Validar disponibilidad de stock
+      // Solo validar stock si está aprobada o completada
       if (data.estado === 'Aprobada' || data.estado === 'Completada') {
-        await validateStockAvailability(data);
+        console.log('🔍 Validando stock para estado:', data.estado);
+        
+        // Verificar que Productos existe y tiene datos
+        if (!data.Productos || data.Productos.length === 0) {
+          console.log('⚠️ No hay productos para validar en beforeCreate');
+          // No lanzar error, dejar que se procese en afterCreate cuando estén poblados
+          return;
+        }
+        
+        await validateStockAvailability(data.Productos);
+      } else {
+        console.log('ℹ️ Estado:', data.estado, '- No se valida stock aún');
       }
       
     } catch (error) {
@@ -21,19 +33,33 @@ module.exports = {
   },
 
   async beforeUpdate(event) {
-    const { data } = event.params;
+    const { data, where } = event.params;
     
     try {
       console.log('=== INICIO beforeUpdate SALIDA ===');
+      console.log('📦 Data de update:', JSON.stringify(data, null, 2));
+      
+      // Obtener el estado actual ANTES del update para comparar
+      const salidaActual = await strapi.entityService.findOne(
+        'api::salida.salida',
+        where.id
+      );
+      
+      // Guardar el estado anterior en data para usarlo en afterUpdate
+      data.estado_anterior = salidaActual?.estado;
+      
+      console.log('🔍 Estado actual en DB:', salidaActual?.estado);
+      console.log('🔍 Nuevo estado:', data.estado);
       
       // Recalcular totales si hay cambios en productos
       if (data.Productos) {
         await calculateTotals(data);
       }
       
-      // Validar stock si se está aprobando
+      // NO validar en beforeUpdate porque los datos no están completos
+      // La validación se hará en afterUpdate con datos poblados
       if (data.estado === 'Aprobada' || data.estado === 'Completada') {
-        await validateStockAvailability(data);
+        console.log('ℹ️ Cambio a estado:', data.estado, '- Validación se hará en afterUpdate');
       }
       
     } catch (error) {
@@ -53,32 +79,45 @@ module.exports = {
         return;
       }
       
-      console.log('📤 Procesando salida con ID:', result.id);
+      console.log('📤 Salida creada con ID:', result.id, 'Estado:', result.estado);
       
-      // Solo procesar si está aprobada o completada
-      if (result.estado === 'Aprobada' || result.estado === 'Completada') {
-        const populatedSalida = await strapi.entityService.findOne(
-          'api::salida.salida',
-          result.id,
-          {
-            populate: {
-              Productos: {
-                populate: {
-                  producto: true,
-                  color: true,
-                  talla: true
-                }
+      // Poblar la salida para tener todos los datos
+      const populatedSalida = await strapi.entityService.findOne(
+        'api::salida.salida',
+        result.id,
+        {
+          populate: {
+            Productos: {
+              populate: {
+                producto: true,
+                color: true,
+                talla: true
               }
             }
           }
-        );
-        
-        if (!populatedSalida) {
-          console.error('❌ No se pudo encontrar la salida con ID:', result.id);
-          return;
         }
-        
-        await processApprovedSalida(populatedSalida);
+      );
+      
+      if (!populatedSalida) {
+        console.error('❌ No se pudo encontrar la salida con ID:', result.id);
+        return;
+      }
+      
+      console.log('📦 Productos encontrados:', populatedSalida.Productos?.length || 0);
+      
+      // Validar y procesar si está aprobada o completada
+      if (populatedSalida.estado === 'Aprobada' || populatedSalida.estado === 'Completada') {
+        // Primero validar stock con los datos poblados
+        try {
+          await validateStockAvailabilityPopulated(populatedSalida.Productos);
+          // Si la validación pasa, procesar
+          await processApprovedSalida(populatedSalida);
+        } catch (error) {
+          // Si falla la validación, eliminar la salida creada
+          console.error('❌ Validación de stock falló, eliminando salida:', error.message);
+          await strapi.entityService.delete('api::salida.salida', result.id);
+          throw error; // Re-lanzar el error
+        }
       } else {
         console.log('ℹ️ Salida en estado:', result.estado, '- No se procesa inventario');
       }
@@ -96,10 +135,18 @@ module.exports = {
       console.log('=== INICIO afterUpdate SALIDA ===');
       console.log('Estado actual:', result.estado);
       
-      // Detectar cambio de estado a Aprobada/Completada
-      const wasApproved = result.estado === 'Aprobada' || result.estado === 'Completada';
+      // Obtener el estado ANTERIOR desde params
+      const estadoAnterior = params.data.estado_anterior || null;
+      console.log('Estado anterior:', estadoAnterior);
       
-      if (wasApproved) {
+      // Solo procesar si HAY UN CAMBIO de estado hacia Aprobada/Completada
+      const cambioAAprobada = (estadoAnterior !== 'Aprobada' && estadoAnterior !== 'Completada') &&
+                              (result.estado === 'Aprobada' || result.estado === 'Completada');
+      
+      if (cambioAAprobada) {
+        console.log('✅ Detectado cambio de estado a aprobada/completada');
+        
+        // Poblar para tener todos los datos
         const populatedSalida = await strapi.entityService.findOne(
           'api::salida.salida',
           result.id,
@@ -121,15 +168,22 @@ module.exports = {
           return;
         }
         
-        // Verificar si ya fue procesada anteriormente
-        const alreadyProcessed = await checkIfSalidaWasProcessed(result.id);
+        console.log('📦 Productos poblados:', populatedSalida.Productos?.length || 0);
         
-        if (alreadyProcessed) {
-          console.log('⚠️ Salida ya fue procesada anteriormente - ID:', result.id);
-          return;
+        // Validar stock con datos completos y procesar
+        try {
+          await validateStockAvailabilityPopulated(populatedSalida.Productos);
+          await processApprovedSalida(populatedSalida);
+        } catch (error) {
+          // Si falla, revertir el estado a Borrador
+          console.error('❌ Error procesando salida, revirtiendo estado:', error.message);
+          await strapi.entityService.update('api::salida.salida', result.id, {
+            data: { estado: 'Borrador' }
+          });
+          throw error;
         }
-        
-        await processApprovedSalida(populatedSalida);
+      } else if (result.estado === 'Aprobada' || result.estado === 'Completada') {
+        console.log('ℹ️ Salida ya estaba aprobada/completada, no se reprocesa');
       } else {
         console.log('ℹ️ Estado no requiere procesamiento:', result.estado);
       }
@@ -141,76 +195,104 @@ module.exports = {
   }
 };
 
+// ============================================
 // FUNCIONES AUXILIARES
+// ============================================
 
 async function calculateTotals(data) {
   if (!data.Productos || !data.Productos.length) {
-    data.total_monto = 0;
     data.total_items = 0;
     return;
   }
 
-  let totalMonto = 0;
   let totalItems = 0;
 
   for (const item of data.Productos) {
     const cantidad = parseInt(item.cantidad) || 0;
-    const precioVenta = parseFloat(item.precio_venta) || 0;
-    
-    // Calcular subtotal para el item
-    item.subtotal = cantidad * precioVenta;
-    
-    totalMonto += item.subtotal;
     totalItems += cantidad;
   }
 
-  data.total_monto = totalMonto;
   data.total_items = totalItems;
   
-  console.log('💰 Totales calculados:', {
-    items: totalItems,
-    monto: totalMonto
-  });
+  console.log('📊 Total de items calculado:', totalItems);
 }
 
-async function validateStockAvailability(data) {
-  if (!data.Productos || !data.Productos.length) {
-    throw new Error('No hay productos en la salida');
+async function validateStockAvailability(productos) {
+  if (!productos || !productos.length) {
+    console.log('⚠️ No hay productos para validar');
+    return; // No lanzar error, solo retornar
   }
 
-  console.log('🔍 Validando disponibilidad de stock...');
+  console.log('🔍 Validando disponibilidad de stock para', productos.length, 'items...');
+  console.log('📦 Productos recibidos:', JSON.stringify(productos, null, 2));
   
-  for (const item of data.Productos) {
-    const { producto, color, talla, cantidad } = item;
+  for (const item of productos) {
+    console.log('🔍 Item completo:', JSON.stringify(item, null, 2));
     
-    if (!producto || !color || !cantidad) {
-      throw new Error('Datos incompletos en item de salida');
+    // En beforeCreate/beforeUpdate, las relaciones vienen como IDs
+    const productoId = item.producto?.id || item.producto;
+    const colorId = item.color?.id || item.color;
+    const tallaId = item.talla?.id || item.talla || null;
+    const cantidad = parseInt(item.cantidad) || 0;
+    
+    console.log('🔍 Validando item parseado:', {
+      productoId,
+      colorId,
+      tallaId,
+      cantidad,
+      itemOriginal: item
+    });
+    
+    // Si los datos están vacíos, probablemente aún no se han guardado los componentes
+    if (!productoId || !colorId) {
+      console.log('⚠️ Item sin producto o color, probablemente aún no guardado. Saltando validación.');
+      continue; // Continuar con el siguiente en lugar de lanzar error
     }
     
+    if (!cantidad || cantidad <= 0) {
+      console.error('❌ Cantidad inválida:', cantidad);
+      throw new Error('La cantidad debe ser mayor a 0');
+    }
+    
+    // Construir whereClause
     const whereClause = {
-      producto: producto.id || producto,
-      color: color.id || color
+      producto: productoId,
+      color: colorId
     };
     
-    if (talla) {
-      whereClause.talla = talla.id || talla;
+    if (tallaId) {
+      whereClause.talla = tallaId;
     } else {
       whereClause.talla = null;
     }
     
+    // Buscar en inventario
     const inventarioRecord = await strapi.db.query('api::inventario-color.inventario-color').findOne({
       where: whereClause,
       populate: ['producto', 'color', 'talla']
     });
     
     if (!inventarioRecord) {
-      const productoNombre = producto.nombre || 'Producto';
-      const colorNombre = color.nombre || 'Color';
-      const tallaNombre = talla?.sigla || '';
+      // Obtener nombres para mensaje de error más claro
+      const producto = await strapi.db.query('api::producto.producto').findOne({
+        where: { id: productoId }
+      });
+      const color = await strapi.db.query('api::color.color').findOne({
+        where: { id: colorId }
+      });
       
-      throw new Error(
-        `No existe registro de inventario para ${productoNombre} - ${colorNombre}${tallaNombre ? ' - ' + tallaNombre : ''}`
-      );
+      let talla = null;
+      if (tallaId) {
+        talla = await strapi.db.query('api::talla.talla').findOne({
+          where: { id: tallaId }
+        });
+      }
+      
+      const descripcion = talla
+        ? `${producto?.nombre || 'Producto'} - ${color?.nombre || 'Color'} - ${talla?.sigla || 'Talla'}`
+        : `${producto?.nombre || 'Producto'} - ${color?.nombre || 'Color'}`;
+      
+      throw new Error(`No existe registro de inventario para: ${descripcion}`);
     }
     
     const stockDisponible = inventarioRecord.stock_actual || 0;
@@ -225,17 +307,135 @@ async function validateStockAvailability(data) {
       );
     }
     
-    console.log(`✅ Stock validado: ${inventarioRecord.producto.nombre} - Stock: ${stockDisponible} >= ${cantidad}`);
+    console.log(`✅ Stock validado: ${inventarioRecord.producto.nombre} - Disponible: ${stockDisponible} >= ${cantidad}`);
+  }
+  
+  console.log('✅ Validación de stock completada exitosamente');
+}
+
+async function validateStockAvailabilityPopulated(productos) {
+  if (!productos || !productos.length) {
+    throw new Error('No hay productos en la salida');
+  }
+
+  console.log('🔍 Validando stock con datos poblados:', productos.length, 'items');
+  
+  for (const item of productos) {
+    const { producto, color, talla, cantidad } = item;
+    
+    if (!producto?.id || !color?.id) {
+      throw new Error('Datos incompletos: falta producto o color');
+    }
+    
+    const cantidadNum = parseInt(cantidad) || 0;
+    if (cantidadNum <= 0) {
+      throw new Error('La cantidad debe ser mayor a 0');
+    }
+    
+    // Construir whereClause
+    const whereClause = {
+      producto: producto.id,
+      color: color.id
+    };
+    
+    if (talla?.id) {
+      whereClause.talla = talla.id;
+    } else {
+      whereClause.talla = null;
+    }
+    
+    // Buscar en inventario
+    const inventarioRecord = await strapi.db.query('api::inventario-color.inventario-color').findOne({
+      where: whereClause,
+      populate: ['producto', 'color', 'talla']
+    });
+    
+    if (!inventarioRecord) {
+      const descripcion = talla
+        ? `${producto.nombre} - ${color.nombre} - ${talla.sigla}`
+        : `${producto.nombre} - ${color.nombre}`;
+      
+      throw new Error(`No existe registro de inventario para: ${descripcion}`);
+    }
+    
+    const stockDisponible = inventarioRecord.stock_actual || 0;
+    
+    if (stockDisponible < cantidadNum) {
+      const descripcion = inventarioRecord.talla 
+        ? `${inventarioRecord.producto.nombre} - ${inventarioRecord.color.nombre} - ${inventarioRecord.talla.sigla}`
+        : `${inventarioRecord.producto.nombre} - ${inventarioRecord.color.nombre}`;
+      
+      throw new Error(
+        `Stock insuficiente para ${descripcion}. Disponible: ${stockDisponible}, Solicitado: ${cantidadNum}`
+      );
+    }
+    
+    console.log(`✅ Stock OK: ${producto.nombre} - Disponible: ${stockDisponible} >= ${cantidadNum}`);
   }
   
   console.log('✅ Validación de stock completada');
 }
 
 async function checkIfSalidaWasProcessed(salidaId) {
-  // Verificar si esta salida ya redujo el inventario
-  // Puedes usar un flag adicional o verificar por fecha de última salida
-  // Por ahora, asumimos que no fue procesada si llegó hasta aquí
-  return false;
+  try {
+    // Verificar si algún producto en inventario tiene esta salida como última_salida reciente
+    const salida = await strapi.entityService.findOne(
+      'api::salida.salida',
+      salidaId,
+      {
+        populate: {
+          Productos: {
+            populate: {
+              producto: true,
+              color: true,
+              talla: true
+            }
+          }
+        }
+      }
+    );
+    
+    if (!salida || !salida.Productos?.length) return false;
+    
+    // Verificar el primer producto como muestra
+    const primerItem = salida.Productos[0];
+    const whereClause = {
+      producto: primerItem.producto.id,
+      color: primerItem.color.id
+    };
+    
+    if (primerItem.talla?.id) {
+      whereClause.talla = primerItem.talla.id;
+    } else {
+      whereClause.talla = null;
+    }
+    
+    const inventario = await strapi.db.query('api::inventario-color.inventario-color').findOne({
+      where: whereClause
+    });
+    
+    if (!inventario) return false;
+    
+    // Si la última salida es muy reciente (menos de 5 segundos), probablemente ya fue procesada
+    const ultimaSalida = inventario.ultima_salida;
+    if (ultimaSalida) {
+      const ahora = new Date();
+      const diferencia = ahora - new Date(ultimaSalida);
+      if (diferencia < 5000) {
+        console.log('⏱️ Última salida muy reciente, probablemente ya procesada');
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error verificando si salida fue procesada:', error);
+    return false;
+  }
+}
+
+async function markSalidaAsProcessed(salidaId) {
+  console.log('✅ Salida marcada como procesada:', salidaId);
 }
 
 async function processApprovedSalida(salida) {
@@ -367,7 +567,7 @@ async function updateGeneralInventory(productoId, fechaSalida) {
       
       console.log(`✅ Inventario general actualizado: ${stockAnterior} → ${stockTotal}`);
     } else {
-      // Crear si no existe (raro en salidas, pero por seguridad)
+      // Crear si no existe
       const producto = await strapi.db.query('api::producto.producto').findOne({
         where: { id: productoId }
       });

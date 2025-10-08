@@ -1009,7 +1009,7 @@ export interface ApiPublicacionesRecientePublicacionesReciente
 export interface ApiSalidaSalida extends Schema.CollectionType {
   collectionName: 'salidas';
   info: {
-    description: '';
+    description: 'Control de salidas de inventario';
     displayName: 'Salidas';
     pluralName: 'salidas';
     singularName: 'salida';
@@ -1031,16 +1031,31 @@ export interface ApiSalidaSalida extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    Productos: Attribute.Component<'productos.items-salida', true>;
+    estado: Attribute.Enumeration<
+      ['Borrador', 'Pendiente', 'Aprobada', 'Rechazada', 'Completada']
+    > &
+      Attribute.DefaultTo<'Borrador'>;
+    fecha_salida: Attribute.Date & Attribute.Required;
+    numero_documento: Attribute.String;
+    Productos: Attribute.Component<'productos.items-salida', true> &
+      Attribute.Required;
     solicitado_por: Attribute.Relation<
       'api::salida.salida',
       'oneToOne',
       'admin::user'
     >;
     tipo_solicitud: Attribute.Enumeration<
-      ['Entrega', 'Venta directa', 'Preventa', 'Devoluci\u00F3n']
+      [
+        'Entrega',
+        'Venta directa',
+        'Preventa',
+        'Devoluci\u00F3n',
+        'Transferencia',
+        'Otros'
+      ]
     > &
       Attribute.DefaultTo<'Entrega'>;
+    total_items: Attribute.Integer;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
       'api::salida.salida',

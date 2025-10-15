@@ -5,11 +5,10 @@
     "singularName": "wishlist",
     "pluralName": "wishlists",
     "displayName": "Wishlist",
-    "description": "Lista de productos deseados por usuarios"
+    "description": "Lista de productos deseados por usuario"
   },
   "options": {
-    "draftAndPublish": false,
-    "comment": ""
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -22,8 +21,7 @@
     "producto": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::producto.producto",
-      "inversedBy": "wishlists"
+      "target": "api::producto.producto"
     },
     "fecha_agregado": {
       "type": "datetime",

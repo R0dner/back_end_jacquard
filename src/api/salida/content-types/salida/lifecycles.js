@@ -39,18 +39,6 @@ module.exports = {
       console.log('=== INICIO beforeUpdate SALIDA ===');
       console.log('📦 Data de update:', JSON.stringify(data, null, 2));
       
-      // Obtener el estado actual ANTES del update para comparar
-      const salidaActual = await strapi.entityService.findOne(
-        'api::salida.salida',
-        where.id
-      );
-      
-      // Guardar el estado anterior en data para usarlo en afterUpdate
-      data.estado_anterior = salidaActual?.estado;
-      
-      console.log('🔍 Estado actual en DB:', salidaActual?.estado);
-      console.log('🔍 Nuevo estado:', data.estado);
-      
       // Recalcular totales si hay cambios en productos
       if (data.Productos) {
         await calculateTotals(data);
@@ -129,23 +117,16 @@ module.exports = {
   },
 
   async afterUpdate(event) {
-    const { result, params } = event;
+    const { result } = event;
     
     try {
       console.log('=== INICIO afterUpdate SALIDA ===');
       console.log('Estado actual:', result.estado);
       
-      // Obtener el estado ANTERIOR desde params
-      const estadoAnterior = params.data.estado_anterior || null;
-      console.log('Estado anterior:', estadoAnterior);
+      // Detectar cambio de estado a Aprobada/Completada
+      const debeProcesoarse = result.estado === 'Aprobada' || result.estado === 'Completada';
       
-      // Solo procesar si HAY UN CAMBIO de estado hacia Aprobada/Completada
-      const cambioAAprobada = (estadoAnterior !== 'Aprobada' && estadoAnterior !== 'Completada') &&
-                              (result.estado === 'Aprobada' || result.estado === 'Completada');
-      
-      if (cambioAAprobada) {
-        console.log('✅ Detectado cambio de estado a aprobada/completada');
-        
+      if (debeProcesoarse) {
         // Poblar para tener todos los datos
         const populatedSalida = await strapi.entityService.findOne(
           'api::salida.salida',
@@ -170,10 +151,19 @@ module.exports = {
         
         console.log('📦 Productos poblados:', populatedSalida.Productos?.length || 0);
         
+        // Verificar si ya fue procesada
+        const alreadyProcessed = await checkIfSalidaWasProcessed(result.id);
+        
+        if (alreadyProcessed) {
+          console.log('⚠️ Salida ya fue procesada anteriormente - ID:', result.id);
+          return;
+        }
+        
         // Validar stock con datos completos y procesar
         try {
           await validateStockAvailabilityPopulated(populatedSalida.Productos);
           await processApprovedSalida(populatedSalida);
+          await markSalidaAsProcessed(result.id);
         } catch (error) {
           // Si falla, revertir el estado a Borrador
           console.error('❌ Error procesando salida, revirtiendo estado:', error.message);
@@ -182,8 +172,6 @@ module.exports = {
           });
           throw error;
         }
-      } else if (result.estado === 'Aprobada' || result.estado === 'Completada') {
-        console.log('ℹ️ Salida ya estaba aprobada/completada, no se reprocesa');
       } else {
         console.log('ℹ️ Estado no requiere procesamiento:', result.estado);
       }

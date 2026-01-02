@@ -918,7 +918,13 @@ export interface ApiProductoProducto extends Schema.CollectionType {
   };
   attributes: {
     activo: Attribute.Boolean & Attribute.DefaultTo<true>;
-    codigo: Attribute.UID & Attribute.Required;
+    codigo: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetMinMaxLength<{
+        maxLength: 20;
+        minLength: 3;
+      }>;
     colores: Attribute.Relation<
       'api::producto.producto',
       'oneToMany',
@@ -931,7 +937,12 @@ export interface ApiProductoProducto extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    descripcion: Attribute.Text & Attribute.Required;
+    descripcion: Attribute.Text &
+      Attribute.Required &
+      Attribute.SetMinMaxLength<{
+        maxLength: 500;
+        minLength: 10;
+      }>;
     fecha_disponible: Attribute.Date;
     grupos_de_productos: Attribute.Relation<
       'api::producto.producto',
@@ -943,9 +954,13 @@ export interface ApiProductoProducto extends Schema.CollectionType {
     nombre: Attribute.String &
       Attribute.Required &
       Attribute.SetMinMaxLength<{
+        maxLength: 100;
         minLength: 3;
       }>;
-    observaciones: Attribute.Text;
+    observaciones: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 300;
+      }>;
     tallas: Attribute.Relation<
       'api::producto.producto',
       'oneToMany',

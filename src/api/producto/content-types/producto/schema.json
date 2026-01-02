@@ -13,20 +13,28 @@
   "pluginOptions": {},
   "attributes": {
     "codigo": {
-      "type": "uid",
-      "required": true
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 3,
+      "maxLength": 20,
+      "regex": "^[A-Z0-9-]+$"
     },
     "nombre": {
       "type": "string",
       "required": true,
-      "minLength": 3
+      "minLength": 3,
+      "maxLength": 100
     },
     "descripcion": {
       "type": "text",
-      "required": true
+      "required": true,
+      "minLength": 10,
+      "maxLength": 500
     },
     "observaciones": {
-      "type": "text"
+      "type": "text",
+      "maxLength": 300
     },
     "activo": {
       "type": "boolean",

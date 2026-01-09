@@ -1,3 +1,86 @@
+// Catálogo de categorías permitidas (fuera del export)
+const CATEGORIAS_PERMITIDAS = {
+  'ABR': 'ABRIGO',
+  'BUF': 'BUFANDAS',
+  'CAM': 'CAMISA',
+  'CRD': 'CARDIGANS',
+  'CHL': 'CHALECOS',
+  'CHP': 'CHOMPAS',
+  'PON': 'PONCHITOS',
+  'CUE': 'CUELLERAS',
+  'FLD': 'FALDAS',
+  'GOR': 'GORRITOS',
+  'BOI': 'BOINAS'
+};
+
+// Géneros permitidos
+const GENEROS_PERMITIDOS = ['VR', 'MJ', 'NÑ', 'UN']; // VR=Varón, MJ=Mujer, NÑ=Niño, UN=Unisex
+
+/**
+ * Valida el formato del código del producto
+ * Formato esperado: JTX-CHL-VR-100
+ */
+function validarCodigo(codigo) {
+  // Convertir a mayúsculas y limpiar
+  codigo = codigo.toUpperCase().trim();
+
+  // Si no empieza con JTX-, agregarlo automáticamente
+  if (!codigo.startsWith('JTX-')) {
+    // Si el usuario escribió algo como "CHL-VR-100", agregamos "JTX-"
+    codigo = 'JTX-' + codigo;
+  }
+
+  // Validar longitud (11-15 caracteres)
+  if (codigo.length < 11 || codigo.length > 15) {
+    throw new Error('El código debe tener entre 11 y 15 caracteres. Formato: JTX-CAT-GEN-NUM');
+  }
+
+  // Validar formato general con regex
+  const formatoRegex = /^JTX-[A-Z]{3}-[A-Z]{2}-\d{1,3}$/;
+  if (!formatoRegex.test(codigo)) {
+    throw new Error(
+      'Formato de código inválido. Debe ser: JTX-CATEGORÍA-GÉNERO-NÚMERO\n' +
+      'Ejemplo: JTX-CHL-VR-100 o solo CHL-VR-100 (se agregará JTX- automáticamente)'
+    );
+  }
+
+  // Separar las partes del código
+  const partes = codigo.split('-');
+  const [prefijo, categoria, genero, numero] = partes;
+
+  // Validar prefijo (siempre debe ser JTX)
+  if (prefijo !== 'JTX') {
+    throw new Error('El código debe iniciar obligatoriamente con "JTX-"');
+  }
+
+  // Validar categoría
+  if (!CATEGORIAS_PERMITIDAS[categoria]) {
+    const categoriasDisponibles = Object.keys(CATEGORIAS_PERMITIDAS).join(', ');
+    throw new Error(
+      `Categoría inválida: "${categoria}"\n` +
+      `Categorías permitidas: ${categoriasDisponibles}\n` +
+      `Ejemplo: JTX-CHL-VR-100 (Chalecos)`
+    );
+  }
+
+  // Validar género
+  if (!GENEROS_PERMITIDOS.includes(genero)) {
+    const generosDisponibles = GENEROS_PERMITIDOS.join(', ');
+    throw new Error(
+      `Género inválido: "${genero}"\n` +
+      `Géneros permitidos: ${generosDisponibles}`
+    );
+  }
+
+  // Validar número
+  const num = parseInt(numero, 10);
+  if (num < 1 || num > 999) {
+    throw new Error('El número del código debe estar entre 1 y 999');
+  }
+
+  return codigo;
+}
+
 module.exports = {
   // Validaciones antes de crear
   async beforeCreate(event) {
@@ -5,24 +88,13 @@ module.exports = {
     
     // Validar código
     if (data.codigo) {
-      // Convertir a mayúsculas
-      data.codigo = data.codigo.toUpperCase().trim();
-      
-      // Validar formato (solo letras mayúsculas, números y guiones)
-      const codigoRegex = /^[A-Z0-9-]+$/;
-      if (!codigoRegex.test(data.codigo)) {
-        throw new Error('El código solo puede contener letras mayúsculas, números y guiones. Ejemplo: PROD-001, CAM-2024');
+      try {
+        data.codigo = validarCodigo(data.codigo);
+      } catch (error) {
+        throw new Error(`Error en el código: ${error.message}`);
       }
-      
-      // Validar longitud
-      if (data.codigo.length < 3 || data.codigo.length > 20) {
-        throw new Error('El código debe tener entre 3 y 20 caracteres');
-      }
-      
-      // Verificar que no empiece con "producto"
-      if (data.codigo.toLowerCase().startsWith('producto')) {
-        throw new Error('El código no puede comenzar con la palabra "producto"');
-      }
+    } else {
+      throw new Error('El código es obligatorio');
     }
     
     // Validar nombre
@@ -61,19 +133,10 @@ module.exports = {
     
     // Validar código si se está modificando
     if (data.codigo !== undefined) {
-      data.codigo = data.codigo.toUpperCase().trim();
-      
-      const codigoRegex = /^[A-Z0-9-]+$/;
-      if (!codigoRegex.test(data.codigo)) {
-        throw new Error('El código solo puede contener letras mayúsculas, números y guiones. Ejemplo: PROD-001, CAM-2024');
-      }
-      
-      if (data.codigo.length < 3 || data.codigo.length > 20) {
-        throw new Error('El código debe tener entre 3 y 20 caracteres');
-      }
-      
-      if (data.codigo.toLowerCase().startsWith('producto')) {
-        throw new Error('El código no puede comenzar con la palabra "producto"');
+      try {
+        data.codigo = validarCodigo(data.codigo);
+      } catch (error) {
+        throw new Error(`Error en el código: ${error.message}`);
       }
     }
     

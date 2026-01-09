@@ -908,7 +908,7 @@ export interface ApiPedidoPedido extends Schema.CollectionType {
 export interface ApiProductoProducto extends Schema.CollectionType {
   collectionName: 'productos';
   info: {
-    description: 'Cat\u00E1logo de productos';
+    description: 'Cat\u00E1logo de productos con c\u00F3digo formato JTX-CAT-GEN-NUM';
     displayName: 'Productos';
     pluralName: 'productos';
     singularName: 'producto';
@@ -922,9 +922,10 @@ export interface ApiProductoProducto extends Schema.CollectionType {
       Attribute.Required &
       Attribute.Unique &
       Attribute.SetMinMaxLength<{
-        maxLength: 20;
-        minLength: 3;
-      }>;
+        maxLength: 15;
+        minLength: 11;
+      }> &
+      Attribute.DefaultTo<'JTX-'>;
     colores: Attribute.Relation<
       'api::producto.producto',
       'oneToMany',
@@ -949,6 +950,8 @@ export interface ApiProductoProducto extends Schema.CollectionType {
       'manyToMany',
       'api::grupo-producto.grupo-producto'
     >;
+    GUIA_CODIGOS: Attribute.Text &
+      Attribute.DefaultTo<'\uD83D\uDCCB C\u00D3DIGOS:   EJEMPLO : JTX-ABR-VR-01\nABR=Abrigo  BUF=Bufandas  CAM=Camisa  CRD=Cardigans  CHL=Chalecos  CHP=Chompas\nPON=Ponchitos  CUE=Cuelleras  FLD=Faldas  GOR=Gorritos  BOI=Boinas'>;
     imagen_principal: Attribute.Media<'images'>;
     multimedia: Attribute.Media<'images' | 'videos', true>;
     nombre: Attribute.String &

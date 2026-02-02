@@ -12,9 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "codigo": {
-      "type": "uid"
-    },
     "nombre": {
       "type": "string"
     },

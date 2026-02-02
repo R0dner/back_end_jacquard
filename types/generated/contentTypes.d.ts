@@ -422,7 +422,6 @@ export interface ApiCategoriasCategorias extends Schema.CollectionType {
   };
   attributes: {
     activo: Attribute.Boolean & Attribute.DefaultTo<true>;
-    codigo: Attribute.UID;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::categorias.categorias',
@@ -575,7 +574,6 @@ export interface ApiGrupoProductoGrupoProducto extends Schema.CollectionType {
       'manyToOne',
       'api::categorias.categorias'
     >;
-    codigo: Attribute.UID;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::grupo-producto.grupo-producto',
